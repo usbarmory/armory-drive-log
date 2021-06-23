@@ -27,11 +27,16 @@ type FirmwareRelease struct {
 	// PlatformID identifies the hardware platform this release targets.
 	PlatformID string `json:"platform_id"`
 
-	// ArtifactSHA256 contains the SHA256 hashes of the named release artifacts.
-	ArtifactSHA256 map[string][]byte `json:"artifact_hashes"`
+	// Revision identifies the revision of this release.
+	// e.g. "v2021.05.03"
+	Revision string `json:"revision"`
 
-	// SourceURL is the location from which the source code used to produce this release can be downloaded.
-	SourceURL string `json:"source"`
+	// ArtifactSHA256 contains the SHA256 hashes of the named release artifacts.
+	ArtifactSHA256 map[string][]byte `json:"artifact_sha256"`
+
+	// SourceURL is the location from which an archive of the source code used to
+	// produce this release can be downloaded.
+	SourceURL string `json:"source_url"`
 
 	// SourceSHA256 is the SHA256 hash of the contents of the source file at the location
 	// pointed to by SourceURL.
