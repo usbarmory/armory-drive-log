@@ -1,18 +1,29 @@
-create_release
---------------
+# create_release
 
-This tool creates a JSON [api.FirmwareRelease](../../api/log_entries.go)
+This tool creates a [api.FirmwareRelease](../../api/log_entries.go)
 structure using data from the GitHub API.
+
+The FirmwareRelease data is serialised to JSON format, and signed using
+the Go sumdb's [signed note](https://pkg.go.dev/golang.org/x/mod/sumdb/note)
+format.
+
+The tool expects to find the private key for creating the signature in the
+`MANIFEST_PRIVATE_KEY` environment variable, this key should be in the note.Signer
+key format.
+
+You can use the
+[generate_keys](https://github.com/google/trillian-examples/serverless/cmd/generate_keys)
+command in the [trillian-examples](github.com/google/trillian-examples) repo to
+create a suitable key pair.
 
 e.g.:
 
 ```bash
 $ go run ./cmd/create_release/ --logtostderr
-I0624 16:22:53.603475 2728324 main.go:83] Fetching release info...
-I0624 16:22:53.841686 2728324 main.go:103] Fetching and hashing source tarball...
-I0624 16:22:54.263937 2728324 main.go:110] Identifying commit hash associated with release...
-I0624 16:22:54.589783 2728324 main.go:129] Hashing release artifacts...
-I0624 16:22:56.691517 2728324 main.go:73] Create FirmwareMeta:
+I0624 18:04:43.160977 3089420 main.go:97] Fetching release info...
+I0624 18:04:43.438927 3089420 main.go:117] Fetching and hashing source tarball...
+I0624 18:04:43.847801 3089420 main.go:124] Identifying commit hash associated with release...
+I0624 18:04:44.163807 3089420 main.go:143] Hashing release artifacts...
 {
   "description": "v2021.05.03 (beta pre-release)",
   "platform_id": "\u003cunset\u003e",
@@ -32,10 +43,11 @@ I0624 16:22:56.691517 2728324 main.go:73] Create FirmwareMeta:
     "REV": "5368a786cd492b025e86c6acc461f12d2d149923"
   }
 }
+
+— test-key qaSd8MA4Bkujhqc61wd3u76wCfppuGhh3pXcFzA5lh/kFDWlzk2/un0sA1/5sbFyrBaies7C29CcMl9fCS/POPtu+gc=
 ```
 
-Rate limits
-===========
+## Rate limits
 
 GitHub has a fairly low limit on the number of unauthenticated API requests any
 given IP address can make, if you hit these you can create a GitHub
