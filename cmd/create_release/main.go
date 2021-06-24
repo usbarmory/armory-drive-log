@@ -31,12 +31,20 @@ import (
 	"github.com/f-secure-foundry/armory-drive-log/api"
 	"github.com/golang/glog"
 	"github.com/google/go-github/v35/github"
+	"golang.org/x/mod/sumdb/note"
 	"golang.org/x/oauth2"
 )
 
-// TokenENV is the name of an environment variable to check for a github personal auth token.
-// If you're hitting GitHub API rate limits, setting this will raise the limits.
-const TokenENV = "GITHUB_TOKEN"
+const (
+	// TokenEnv is the name of an environment variable to check for a github personal auth token.
+	// If you're hitting GitHub API rate limits, setting this will raise the limits.
+	TokenEnv = "GITHUB_TOKEN"
+
+	// ManifestPrivateKeyEnv is the name of the env variable which is checked for the private
+	// material used to sign the manifest.
+	// This env var would normally be set by GitHub Actions Secrets.
+	ManifestPrivateKeyEnv = "MANIFEST_PRIVATE_KEY"
+)
 
 var (
 	repo             = flag.String("repo", "f-secure-foundry/armory-drive", "GitHub repo to search for releases")
@@ -60,11 +68,27 @@ func main() {
 		glog.Exitf("Failed to fetch releases: %q", err)
 	}
 
-	glog.Info("Created FirmwareRelease struct:")
-
-	// Write struct to stdout in case we're being piped.
 	pp, _ := json.MarshalIndent(r, "", "  ")
-	fmt.Println(string(pp))
+	s, err := sign(string(pp))
+	if err != nil {
+		glog.Exitf("Failed to sign FirmwareRelease JSON: %q", err)
+	}
+	// Write struct to stdout in case we're being piped.
+	fmt.Println(string(s))
+}
+
+// sign signs the passed in body using the Go sumdb's note format.
+func sign(body string) ([]byte, error) {
+	// Note body must end in a trailing new line, so add one if necessary.
+	if !strings.HasSuffix(body, "\n") {
+		body = fmt.Sprintf("%s\n", body)
+	}
+	signer, err := note.NewSigner(os.Getenv(ManifestPrivateKeyEnv))
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialise key: %q", err)
+	}
+
+	return note.Sign(&note.Note{Text: body}, signer)
 }
 
 // getRelease uses the GitHub API to retrieve information about the tagged release, and uses it
@@ -192,7 +216,7 @@ func hashRemote(url string) ([]byte, error) {
 // as an OAUTH token for all requests to the github API (this greatly increases
 // the API rate limits.
 func getHTTPClient(ctx context.Context) *http.Client {
-	tok := os.Getenv(TokenENV)
+	tok := os.Getenv(TokenEnv)
 	if tok != "" {
 		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: tok})
 		return oauth2.NewClient(ctx, ts)
