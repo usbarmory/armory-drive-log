@@ -34,10 +34,14 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// TokenENV is the name of an environment variable to check for a github personal auth token.
+// If you're hitting GitHub API rate limits, setting this will raise the limits.
+const TokenENV = "GITHUB_TOKEN"
+
 var (
 	repo             = flag.String("repo", "f-secure-foundry/armory-drive", "GitHub repo to search for releases")
 	tag              = flag.String("tag", "", "Release tag to fetch, if unset, uses latest release")
-	includeArtifacts = flag.String("include_artifacts", "armory-drive\\.*", "Regex to specify release artifacts to include in manifest")
+	includeArtifacts = flag.String("include_artifacts", `armory-drive\.[[:alnum:]]*$`, "Regex to specify release artifacts to include in manifest")
 )
 
 func main() {
@@ -123,7 +127,7 @@ func getRelease(ctx context.Context, c *github.Client, owner, repo, tag string) 
 			glog.V(1).Infof("Ignoring artifact %q", *a.Name)
 			continue
 		}
-		h, err := hashRemote(*a.URL)
+		h, err := hashRemote(*a.BrowserDownloadURL)
 		if err != nil {
 			return api.FirmwareRelease{}, fmt.Errorf("failed to hash asset at %q: %q", *a.BrowserDownloadURL, err)
 		}
