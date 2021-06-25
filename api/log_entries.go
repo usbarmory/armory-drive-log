@@ -15,9 +15,6 @@
 // Package api contains public structures related to the log contents.
 package api
 
-// EcosystemV0 is the Checkpoint ecosystem string for this usecase.
-const EcosystemV0 = "ArmoryDrive Log v0"
-
 // FirmwareRelease represents a firmware release, and contains all of the
 // information required to reconstruct the unsigned firmware image from source.
 type FirmwareRelease struct {
