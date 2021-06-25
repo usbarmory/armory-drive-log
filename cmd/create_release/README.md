@@ -12,9 +12,8 @@ The tool expects to find the private key for creating the signature in the
 key format.
 
 You can use the
-[generate_keys](https://github.com/google/trillian-examples/serverless/cmd/generate_keys)
-command in the [trillian-examples](github.com/google/trillian-examples) repo to
-create a suitable key pair.
+[generate_keys](https://github.com/f-secure-foundry/armory-drive-log/tree/master/cmd/generate_keys)
+command to create a suitable key pair.
 
 e.g.:
 
