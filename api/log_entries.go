@@ -15,6 +15,12 @@
 // Package api contains public structures related to the log contents.
 package api
 
+const (
+	// FirmwareArtifactName is the name of the firmware image which is expected
+	// to be present in the ArtifactSHA256 map of valid FirmwareRelease instances.
+	FirmwareArtifactName = "armory-drive.imx"
+)
+
 // FirmwareRelease represents a firmware release, and contains all of the
 // information required to reconstruct the unsigned firmware image from source.
 type FirmwareRelease struct {
