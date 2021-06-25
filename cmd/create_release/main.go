@@ -32,20 +32,15 @@ import (
 	"golang.org/x/mod/sumdb/note"
 )
 
-const (
-	// ManifestPrivateKeyFileEnv is the name of the env variable which is checked for the private
-	// material used to sign the manifest.
-	ManifestPrivateKeyFileEnv = "MANIFEST_PRIVATE_KEY_FILE"
-)
-
 var (
-	repo        = flag.String("repo", "f-secure-foundry/armory-drive", "GitHub repo where release will be uploaded")
-	description = flag.String("description", "", "Release description")
-	platformID  = flag.String("platform_id", "", "Specifies the plaform ID that this release is targetting")
-	commitHash  = flag.String("commit_hash", "", "Speficies the github commit hash that the release was built from")
-	toolChain   = flag.String("tool_chain", "", "Specifies the toolchain used to build the release")
-	artifacts   = flag.String("artifacts", `armory-drive.*`, "Space separated list of globs specifying the release artifacts to include")
-	revisionTag = flag.String("revision_tag", "", "The git tag name which identifies the firmware revision")
+	repo           = flag.String("repo", "f-secure-foundry/armory-drive", "GitHub repo where release will be uploaded")
+	description    = flag.String("description", "", "Release description")
+	platformID     = flag.String("platform_id", "", "Specifies the plaform ID that this release is targetting")
+	commitHash     = flag.String("commit_hash", "", "Speficies the github commit hash that the release was built from")
+	toolChain      = flag.String("tool_chain", "", "Specifies the toolchain used to build the release")
+	artifacts      = flag.String("artifacts", `armory-drive.*`, "Space separated list of globs specifying the release artifacts to include")
+	revisionTag    = flag.String("revision_tag", "", "The git tag name which identifies the firmware revision")
+	privateKeyFile = flag.String("private_key", "", "Path to file containing the private key used to sign the manifest")
 )
 
 func main() {
@@ -101,8 +96,7 @@ func sign(body string) ([]byte, error) {
 		body = fmt.Sprintf("%s\n", body)
 	}
 
-	kf := os.Getenv(ManifestPrivateKeyFileEnv)
-	k, err := os.ReadFile(kf)
+	k, err := os.ReadFile(*privateKeyFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read private key file: %q", err)
 	}
