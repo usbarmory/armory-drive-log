@@ -8,8 +8,8 @@ the Go sumdb's [signed note](https://pkg.go.dev/golang.org/x/mod/sumdb/note)
 format.
 
 The tool expects to find the private key for creating the signature in the file
-specified by the `MANIFEST_PRIVATE_KEY_FILE` environment variable, this key
-should be in the note.Signer key format.
+specified by the `--private_key` flag, this key should be in the note.Signer key
+format.
 
 > :frog: You can use the
 [generate_keys](https://github.com/f-secure-foundry/armory-drive-log/tree/master/cmd/generate_keys)
@@ -18,7 +18,7 @@ should be in the note.Signer key format.
 e.g.:
 
 ```bash
-$ go run ./cmd/create_release/ --logtostderr --description="AD release" --platform_id="platform" --commit_hash=acd1c56 --tool_chain=tamago1.16.3 --revision_tag=v2021.06.25 --artifacts='path/to/release/armory-drive.*'
+$ go run ./cmd/create_release/ --logtostderr --description="AD release" --platform_id="platform" --commit_hash=acd1c56 --tool_chain=tamago1.16.3 --revision_tag=v2021.06.25 --artifacts='path/to/release/armory-drive.*' --private_key='path/to/private.key'
 I0625 11:41:25.813439 3275756 main.go:75] Hashing release artifacts...
 {
   "description": "AD release",
