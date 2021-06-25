@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// create_release is a tool to create a release manifest from a GitHub release.
+// create_release is a tool to create a release manifest for a firmare release.
 package main
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
@@ -25,50 +24,68 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"regexp"
+	"path/filepath"
 	"strings"
 
 	"github.com/f-secure-foundry/armory-drive-log/api"
 	"github.com/golang/glog"
-	"github.com/google/go-github/v35/github"
 	"golang.org/x/mod/sumdb/note"
-	"golang.org/x/oauth2"
 )
 
 const (
-	// TokenEnv is the name of an environment variable to check for a github personal auth token.
-	// If you're hitting GitHub API rate limits, setting this will raise the limits.
-	TokenEnv = "GITHUB_TOKEN"
-
-	// ManifestPrivateKeyEnv is the name of the env variable which is checked for the private
+	// ManifestPrivateKeyFileEnv is the name of the env variable which is checked for the private
 	// material used to sign the manifest.
-	// This env var would normally be set by GitHub Actions Secrets.
-	ManifestPrivateKeyEnv = "MANIFEST_PRIVATE_KEY"
+	ManifestPrivateKeyFileEnv = "MANIFEST_PRIVATE_KEY_FILE"
 )
 
 var (
-	repo             = flag.String("repo", "f-secure-foundry/armory-drive", "GitHub repo to search for releases")
-	tag              = flag.String("tag", "", "Release tag to fetch, if unset, uses latest release")
-	includeArtifacts = flag.String("include_artifacts", `armory-drive\.[[:alnum:]]*$`, "Regex to specify release artifacts to include in manifest")
+	repo        = flag.String("repo", "f-secure-foundry/armory-drive", "GitHub repo where release will be uploaded")
+	description = flag.String("description", "", "Release description")
+	platformID  = flag.String("platform_id", "", "Specifies the plaform ID that this release is targetting")
+	commitHash  = flag.String("commit_hash", "", "Speficies the github commit hash that the release was built from")
+	toolChain   = flag.String("tool_chain", "", "Specifies the toolchain used to build the release")
+	artifacts   = flag.String("artifacts", `armory-drive.*`, "Space separated list of globs specifying the release artifacts to include")
+	revisionTag = flag.String("revision_tag", "", "The git tag name which identifies the firmware revision")
 )
 
 func main() {
 	flag.Parse()
-	ctx := context.Background()
-
-	owner, repo, err := splitRepoFlag(*repo)
-	if err != nil {
-		glog.Exitf("Couldn't parse repo: %q", err)
+	if err := validateFlags(); err != nil {
+		glog.Exitf("Invalid flag(s):\n%s", err)
 	}
 
-	c := github.NewClient(getHTTPClient(ctx))
-
-	r, err := getRelease(ctx, c, owner, repo, *tag)
+	sourceURL := fmt.Sprintf("https://github.com/%s/tarball/%s", *repo, *revisionTag)
+	sourceHash, err := hashRemote(sourceURL)
 	if err != nil {
-		glog.Exitf("Failed to fetch releases: %q", err)
+		glog.Exitf("Failed to hash source tarball (%s): %q", sourceURL, err)
 	}
 
-	pp, _ := json.MarshalIndent(r, "", "  ")
+	fr := api.FirmwareRelease{
+		Description:  *description,
+		PlatformID:   *platformID,
+		Revision:     *revisionTag,
+		SourceURL:    sourceURL,
+		SourceSHA256: sourceHash,
+		ToolChain:    *toolChain,
+		BuildArgs: map[string]string{
+			"REV": *commitHash,
+		},
+	}
+
+	// TODO(al): consider using the GH API to check that revisionTag resolves to commitHash and
+	// warn if that's not the case.
+
+	glog.Info("Hashing release artifacts...")
+	artifacts, err := hashArtifacts()
+	if err != nil {
+		glog.Exitf("Failed to hash artifacts: %q", err)
+	}
+	fr.ArtifactSHA256 = artifacts
+
+	pp, err := json.MarshalIndent(fr, "", "  ")
+	if err != nil {
+		glog.Exitf("Failed to marshal FirmwareRelease: %q", err)
+	}
 	s, err := sign(string(pp))
 	if err != nil {
 		glog.Exitf("Failed to sign FirmwareRelease JSON: %q", err)
@@ -83,7 +100,13 @@ func sign(body string) ([]byte, error) {
 	if !strings.HasSuffix(body, "\n") {
 		body = fmt.Sprintf("%s\n", body)
 	}
-	signer, err := note.NewSigner(os.Getenv(ManifestPrivateKeyEnv))
+
+	kf := os.Getenv(ManifestPrivateKeyFileEnv)
+	k, err := os.ReadFile(kf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read private key file: %q", err)
+	}
+	signer, err := note.NewSigner(string(k))
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialise key: %q", err)
 	}
@@ -91,105 +114,45 @@ func sign(body string) ([]byte, error) {
 	return note.Sign(&note.Note{Text: body}, signer)
 }
 
-// getRelease uses the GitHub API to retrieve information about the tagged release, and uses it
-// to populate a FirmwareRelease struct.
-func getRelease(ctx context.Context, c *github.Client, owner, repo, tag string) (api.FirmwareRelease, error) {
-	artifactMatcher, err := regexp.Compile(*includeArtifacts)
-	if err != nil {
-		return api.FirmwareRelease{}, fmt.Errorf("invalid regex passed to --include_artifacts: %q", err)
-	}
-
-	glog.Info("Fetching release info...")
-	// First grab the release info from GitHub
-	var rel *github.RepositoryRelease
-	if tag == "" {
-		rel, _, err = c.Repositories.GetLatestRelease(ctx, owner, repo)
-		if err != nil {
-			return api.FirmwareRelease{}, fmt.Errorf("failed to get latest release: %q", err)
-		}
-	} else {
-		rel, _, err = c.Repositories.GetReleaseByTag(ctx, owner, repo, tag)
-		if err != nil {
-			return api.FirmwareRelease{}, fmt.Errorf("failed to get release with tag %q: %q", tag, err)
+func validateFlags() error {
+	errs := make([]string, 0)
+	checkEmpty := func(n, s string) {
+		if s == "" {
+			errs = append(errs, fmt.Sprintf("--%s can't be empty", n))
 		}
 	}
-	if glog.V(1) {
-		pp, _ := json.MarshalIndent(rel, "", "  ")
-		glog.V(1).Infof("Found release:\n%s", pp)
+	checkEmpty("repo", *repo)
+	checkEmpty("description", *description)
+	checkEmpty("platform_id", *platformID)
+	checkEmpty("commit_hash", *commitHash)
+	checkEmpty("tool_chain", *toolChain)
+	checkEmpty("artifacts", *artifacts)
+	checkEmpty("revision_tag", *revisionTag)
+
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, "\n"))
 	}
-
-	// Hash the release's source tarball
-	glog.Info("Fetching and hashing source tarball...")
-	sourceURL := *rel.TarballURL
-	sourceHash, err := hashRemote(sourceURL)
-	if err != nil {
-		return api.FirmwareRelease{}, fmt.Errorf("failed to hash release source: %q", err)
-	}
-
-	glog.Info("Identifying commit hash associated with release...")
-	releaseCommitSHA, err := fetchReleaseCommit(ctx, c, owner, repo, *rel.TagName)
-
-	// Finally, build the FirmwareRelease structure
-	fr := api.FirmwareRelease{
-		Description: *rel.Name,
-		// TODO(al): This needs to be in the release data somewhere
-		PlatformID:   "<unset>",
-		Revision:     *rel.TagName,
-		SourceURL:    sourceURL,
-		SourceSHA256: sourceHash,
-		// TODO(al): This needs to be in the release data somewhere
-		ToolChain: "tamago1.16.3",
-		BuildArgs: map[string]string{
-			"REV": releaseCommitSHA,
-		},
-		ArtifactSHA256: make(map[string][]byte),
-	}
-
-	glog.Info("Hashing release artifacts...")
-	for _, a := range rel.Assets {
-		if !artifactMatcher.MatchString(*a.Name) {
-			glog.V(1).Infof("Ignoring artifact %q", *a.Name)
-			continue
-		}
-		h, err := hashRemote(*a.BrowserDownloadURL)
-		if err != nil {
-			return api.FirmwareRelease{}, fmt.Errorf("failed to hash asset at %q: %q", *a.BrowserDownloadURL, err)
-		}
-		fr.ArtifactSHA256[*a.Name] = h
-
-	}
-	return fr, err
+	return nil
 }
 
-// splitRepoFlag separates a short owner/repo string into its consistuent parts.
-func splitRepoFlag(repo string) (string, string, error) {
-	if repo == "" {
-		return "", "", errors.New("--repo must not be empty")
-	}
-	r := strings.Split(repo, "/")
-	if len(r) != 2 {
-		return "", "", errors.New("--repo should be of the form 'owner/repo'")
-	}
-	return r[0], r[1], nil
-}
+func hashArtifacts() (map[string][]byte, error) {
+	r := make(map[string][]byte)
+	for _, glob := range strings.Split(*artifacts, " ") {
+		match, err := filepath.Glob(glob)
+		if err != nil {
+			return nil, err
+		}
+		for _, f := range match {
+			h, err := hashFile(f)
+			if err != nil {
+				return nil, err
+			}
 
-// fetchReleaseCommit returns the git SHA associated with the provided tag.
-func fetchReleaseCommit(ctx context.Context, c *github.Client, owner, repo, tag string) (string, error) {
-	// Look up the commit hash associated with the release tag
-	tagRef := fmt.Sprintf("tags/%s", tag)
-	ref, _, err := c.Git.GetRef(ctx, owner, repo, tagRef)
-	if err != nil {
-		return "", fmt.Errorf("failed to look up ref %q: %q ", tagRef, err)
+			_, name := filepath.Split(f)
+			r[name] = h
+		}
 	}
-	relTag, _, err := c.Git.GetTag(ctx, owner, repo, *ref.Object.SHA)
-	if err != nil {
-		return "", fmt.Errorf("failed to look up tag SHA %q: %q ", *ref.Object.SHA, err)
-	}
-	if glog.V(1) {
-		pp, _ := json.MarshalIndent(relTag, "", "  ")
-		glog.V(1).Infof("Found ref:\n%s", pp)
-	}
-	return *relTag.Object.SHA, nil
+	return r, nil
 }
 
 // hashRemote returns the SHA256 of the contents of the resource pointed to by url.
@@ -202,24 +165,22 @@ func hashRemote(url string) ([]byte, error) {
 		return nil, fmt.Errorf("got non-200 HTTP status when fetching %q: %s", url, resp.Status)
 	}
 	defer resp.Body.Close()
+	return hash(resp.Body)
+}
 
+func hashFile(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return hash(f)
+}
+
+func hash(r io.Reader) ([]byte, error) {
 	h := sha256.New()
-	if _, err := io.Copy(h, resp.Body); err != nil {
+	if _, err := io.Copy(h, r); err != nil {
 		return nil, fmt.Errorf("failed to hash content: %q", err)
 	}
 	return h.Sum(nil), nil
-}
-
-// getHTTPClient returns a client for accessing the github API.
-//
-// If the GITHUB_TOKEN env variable is set, then this client will use its contents
-// as an OAUTH token for all requests to the github API (this greatly increases
-// the API rate limits.
-func getHTTPClient(ctx context.Context) *http.Client {
-	tok := os.Getenv(TokenEnv)
-	if tok != "" {
-		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: tok})
-		return oauth2.NewClient(ctx, ts)
-	}
-	return http.DefaultClient
 }
