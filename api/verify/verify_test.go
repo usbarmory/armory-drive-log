@@ -49,7 +49,7 @@ var (
 func buildLog(t *testing.T, leafHashes [][]byte) [][]byte {
 	roots := make([][]byte, 0)
 	h := hasher.DefaultHasher
-	tree := (&compact.RangeFactory{h.HashChildren}).NewEmptyRange(0)
+	tree := (&compact.RangeFactory{Hash: h.HashChildren}).NewEmptyRange(0)
 	for _, lh := range testLeafHashes {
 		if err := tree.Append(lh, nil); err != nil {
 			t.Fatalf("Failed to append: %v", err)

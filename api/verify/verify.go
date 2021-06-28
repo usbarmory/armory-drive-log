@@ -58,7 +58,7 @@ func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frS
 	//  - prove that the new checkpoint is consistent with the device's old checkpoint
 	h := hasher.DefaultHasher
 	manifestHash := h.HashLeaf(pb.FirmwareRelease)
-	tree := (&compact.RangeFactory{h.HashChildren}).NewEmptyRange(0)
+	tree := (&compact.RangeFactory{Hash: h.HashChildren}).NewEmptyRange(0)
 
 	manifestFound := false
 	oldCPFound := false
