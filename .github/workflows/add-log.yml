@@ -1,0 +1,37 @@
+on: [push]
+
+jobs:
+  sequence_and_integrate_job:
+    runs-on: ubuntu-20.04
+    name: Sequence and integrate pending log entries
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Prerequisites
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y golang
+        go build -o /tmp/integrate ${GITHUB_WORKSPACE}/cmd/integrate
+        go build -o /tmp/sequence ${GITHUB_WORKSPACE}/cmd/sequence
+
+    - name: Sequence
+      run: |
+        SERVERLESS_LOG_PUBLIC_KEY=${{ secrets.SERVERLESS_LOG_PUBLIC_KEY }} \
+        /tmp/sequence --storage_dir=${GITHUB_WORKSPACE}/log --logtostderr --entries ${GITHUB_WORKSPACE}/log/leaves/pending/*
+
+    - name: Integrate
+      run: |
+        SERVERLESS_LOG_PRIVATE_KEY=${{ secrets.SERVERLESS_LOG_PRIVATE_KEY }} \
+        SERVERLESS_LOG_PUBLIC_KEY=${{ secrets.SERVERLESS_LOG_PUBLIC_KEY }} \
+        /tmp/integrate --storage_dir=${GITHUB_WORKSPACE}/log --logtostderr
+
+    - name: Clean
+      run: |
+        rm ${GITHUB_WORKSPACE}/log/leaves/pending/*
+
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_user_name: Serverless Bot
+        commit_user_email: actions@github.com
+        commit_author: Serverless Bot <actions@github.com>
+        commit_message: Automatically sequence and integrate log
