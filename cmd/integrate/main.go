@@ -24,8 +24,8 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/google/trillian-examples/serverless/api"
-	"github.com/google/trillian-examples/serverless/internal/log"
-	"github.com/google/trillian-examples/serverless/internal/storage/fs"
+	"github.com/f-secure-foundry/armory-drive-log/internal/log"
+	"github.com/f-secure-foundry/armory-drive-log/internal/storage/fs"
 	"github.com/google/trillian/merkle/rfc6962/hasher"
 	"golang.org/x/mod/sumdb/note"
 

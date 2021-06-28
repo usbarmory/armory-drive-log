@@ -25,8 +25,8 @@ import (
 	"path/filepath"
 
 	"github.com/google/trillian-examples/formats/log"
-	"github.com/google/trillian-examples/serverless/internal/storage"
-	"github.com/google/trillian-examples/serverless/internal/storage/fs"
+	"github.com/f-secure-foundry/armory-drive-log/internal/storage"
+	"github.com/f-secure-foundry/armory-drive-log/internal/storage/fs"
 	"golang.org/x/mod/sumdb/note"
 
 	"github.com/golang/glog"
