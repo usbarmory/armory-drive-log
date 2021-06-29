@@ -53,7 +53,7 @@ func main() {
 	sourceURL := fmt.Sprintf("https://github.com/%s/tarball/%s", *repo, *revisionTag)
 	sourceHash, err := hashRemote(sourceURL)
 	if err != nil {
-		glog.Exitf("Failed to hash source tarball (%s): %q", sourceURL, err)
+		glog.Exitf("Failed to hash source tarball (%s): %v", sourceURL, err)
 	}
 
 	fr := api.FirmwareRelease{
@@ -74,7 +74,7 @@ func main() {
 	glog.Info("Hashing release artifacts...")
 	artifacts, err := hashArtifacts()
 	if err != nil {
-		glog.Exitf("Failed to hash artifacts: %q", err)
+		glog.Exitf("Failed to hash artifacts: %v", err)
 	}
 	if len(artifacts) == 0 {
 		glog.Exit("--artifacts matched ZERO files")
@@ -83,11 +83,11 @@ func main() {
 
 	pp, err := json.MarshalIndent(fr, "", "  ")
 	if err != nil {
-		glog.Exitf("Failed to marshal FirmwareRelease: %q", err)
+		glog.Exitf("Failed to marshal FirmwareRelease: %v", err)
 	}
 	s, err := sign(string(pp))
 	if err != nil {
-		glog.Exitf("Failed to sign FirmwareRelease JSON: %q", err)
+		glog.Exitf("Failed to sign FirmwareRelease JSON: %v", err)
 	}
 	// Write struct to stdout in case we're being piped.
 	if *output == "" {
@@ -109,11 +109,11 @@ func sign(body string) ([]byte, error) {
 
 	k, err := os.ReadFile(*privateKeyFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read private key file: %q", err)
+		return nil, fmt.Errorf("failed to read private key file: %v", err)
 	}
 	signer, err := note.NewSigner(string(k))
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialise key: %q", err)
+		return nil, fmt.Errorf("failed to initialise key: %v", err)
 	}
 
 	return note.Sign(&note.Note{Text: body}, signer)
@@ -164,7 +164,7 @@ func hashArtifacts() (map[string][]byte, error) {
 func hashRemote(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch %q: %q", url, err)
+		return nil, fmt.Errorf("failed to fetch %q: %v", url, err)
 	}
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("got non-200 HTTP status when fetching %q: %s", url, resp.Status)
@@ -185,7 +185,7 @@ func hashFile(path string) ([]byte, error) {
 func hash(r io.Reader) ([]byte, error) {
 	h := sha256.New()
 	if _, err := io.Copy(h, r); err != nil {
-		return nil, fmt.Errorf("failed to hash content: %q", err)
+		return nil, fmt.Errorf("failed to hash content: %v", err)
 	}
 	return h.Sum(nil), nil
 }
