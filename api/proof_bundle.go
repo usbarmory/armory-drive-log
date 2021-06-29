@@ -29,16 +29,9 @@ type ProofBundle struct {
 	// FirmwareRelease struct.
 	FirmwareRelease []byte
 
-	// InclusionProof is the proof of inclusion for FirmwareRelease under NewCheckpoint.
-	InclusionProof [][]byte
-
-	// ConsistencyProofs is a map containing consistency proofs from a number of smaller
-	// Checkpoints to NewCheckpoint.
+	// LeafHashes contains all leaf hashes committed to by NewCheckpoint.
 	//
-	// In the case where the installer is interacting with the device to perform the update,
-	// this map can contain a single entry since the installer can interrogate the device
-	// to know which Checkpoint is current holds.
-	// For non-interactive updates a proof bundle can be provided which contains many/all
-	// possible consistency proofs from smaller Checkpoints.
-	ConsistencyProofs map[uint64][][]byte
+	// This is to allow users who don't/cannot use a tool to install the firmware to verify
+	// consistency with any possible Checkpoint they may have on their device currently.
+	LeafHashes [][]byte
 }
