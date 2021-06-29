@@ -76,6 +76,9 @@ func main() {
 	if err != nil {
 		glog.Exitf("Failed to hash artifacts: %q", err)
 	}
+	if len(artifacts) == 0 {
+		glog.Exit("--artifacts matched ZERO files")
+	}
 	fr.ArtifactSHA256 = artifacts
 
 	pp, err := json.MarshalIndent(fr, "", "  ")
