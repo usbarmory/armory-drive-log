@@ -41,6 +41,7 @@ var (
 	artifacts      = flag.String("artifacts", `armory-drive.*`, "Space separated list of globs specifying the release artifacts to include")
 	revisionTag    = flag.String("revision_tag", "", "The git tag name which identifies the firmware revision")
 	privateKeyFile = flag.String("private_key", "", "Path to file containing the private key used to sign the manifest")
+	output         = flag.String("output", "", "Path to write the output to, leave empty to write to stdout")
 )
 
 func main() {
@@ -86,7 +87,14 @@ func main() {
 		glog.Exitf("Failed to sign FirmwareRelease JSON: %q", err)
 	}
 	// Write struct to stdout in case we're being piped.
-	fmt.Println(string(s))
+	if *output == "" {
+		fmt.Println(string(s))
+	} else {
+		if err := os.WriteFile(*output, s, 0644); err != nil {
+			glog.Exitf("Failed to write output to %q: %v", *output, err)
+		}
+
+	}
 }
 
 // sign signs the passed in body using the Go sumdb's note format.
