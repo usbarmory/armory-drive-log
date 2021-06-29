@@ -1,0 +1,15 @@
+{
+  "description": "v2021.06.25 (beta pre-release) for ArmoryDrive",
+  "platform_id": "UA-MKII-ULZ-1G-GAMMA",
+  "revision": "v2021.06.25",
+  "artifact_sha256": {},
+  "source_url": "https://github.com/f-secure-foundry/armory-drive/tarball/v2021.06.25",
+  "source_sha256": "NtFkuGqfXBfSQo9GpcdveVTfxIN6i6CjNvRnVPW7f9M=",
+  "tool_chain": "tamago1.16.5",
+  "build_args": {
+    "REV": "acd1c56"
+  }
+}
+
+— test-key gDv8AU1NP50womvzTvnX+aHav9ez67f2mFAlzAdR9z/eXKzd2ylMjk4rYwM65WUWR7HsSFjzI8orLTbsA1fX7wXPmw0=
+
