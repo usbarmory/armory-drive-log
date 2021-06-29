@@ -38,7 +38,7 @@ import (
 
 var (
 	release    = flag.String("release", "armory-drive.release", "Path to release metadata file")
-	logURL     = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log", "URL identifying the location of the log")
+	logURL     = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
 	logPubKey  = flag.String("log_pubkey", "armory-drive-log-test+a5aae457+AbDoiIsZgSk5H0v0LjKPKv5dAMb0IfB47tocFtGmyW44", "The log's public key")
 	outputFile = flag.String("output", "", "Path to write output file to, leave unset to write to stdout")
 )
@@ -47,7 +47,7 @@ func main() {
 	flag.Parse()
 
 	if err := checkFlags(); err != nil {
-		glog.Exitf("Invalid flags:\n", err)
+		glog.Exitf("Invalid flags:\n%s", err)
 	}
 
 	lSigV, err := note.NewVerifier(*logPubKey)
@@ -75,8 +75,8 @@ func main() {
 		if err := os.WriteFile(*outputFile, bundleRaw, 0644); err != nil {
 			glog.Exitf("Failed to write to output file %q: %v", *outputFile, err)
 		}
+		glog.Infof("Wrote proof bundle to %q", *outputFile)
 	}
-
 }
 
 func createBundle(logURL string, release []byte, lSigV note.Verifier) (*api.ProofBundle, error) {
@@ -85,6 +85,9 @@ func createBundle(logURL string, release []byte, lSigV note.Verifier) (*api.Proo
 		return nil, fmt.Errorf("failed to parse log URL %q: %v", logURL, err)
 	}
 	f, err := newFetcher(root)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create fetcher: %v", err)
+	}
 
 	h := hasher.DefaultHasher
 
@@ -124,6 +127,7 @@ func createBundle(logURL string, release []byte, lSigV note.Verifier) (*api.Proo
 		if err := lv.VerifyInclusionProof(int64(idx), int64(cp.Size), ip, cp.Hash, leafHash); err != nil {
 			return nil, fmt.Errorf("failed to verify inclusion proof: %q", err)
 		}
+		glog.Infof("Found leaf at %d", idx)
 		break
 	}
 
@@ -149,6 +153,10 @@ func checkFlags() error {
 	checkNotEmpty("release", *release)
 	checkNotEmpty("log_url", *logURL)
 	checkNotEmpty("log_pubkey", *logPubKey)
+
+	if !strings.HasSuffix(*logURL, "/") {
+		errs = append(errs, "--log_url must end with a '/'")
+	}
 
 	if len(errs) > 0 {
 		return errors.New(strings.Join(errs, "\n"))
