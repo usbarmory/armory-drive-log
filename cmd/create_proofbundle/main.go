@@ -195,5 +195,13 @@ func readHTTP(u *url.URL) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
+
+	switch resp.StatusCode {
+	case 200:
+		return ioutil.ReadAll(resp.Body)
+	case 404:
+		return nil, os.ErrNotExist
+	default:
+		return nil, fmt.Errorf("failed to fetch url: %s", resp.Status)
+	}
 }
