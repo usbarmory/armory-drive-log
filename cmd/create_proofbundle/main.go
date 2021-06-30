@@ -17,6 +17,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -41,6 +42,7 @@ var (
 	logURL        = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
 	logPubKeyFile = flag.String("log_pubkey_file", "", "Path to file containing the log's public key")
 	outputFile    = flag.String("output", "", "Path to write output file to, leave unset to write to stdout")
+	timeout       = flag.Duration("timeout", 10*time.Second, "Maximum duration to wait for release to become integrated into the log")
 )
 
 func main() {
@@ -49,6 +51,9 @@ func main() {
 	if err := checkFlags(); err != nil {
 		glog.Exitf("Invalid flags:\n%s", err)
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
+	defer cancel()
 
 	pkRaw, err := os.ReadFile(*logPubKeyFile)
 	if err != nil {
@@ -64,7 +69,7 @@ func main() {
 		glog.Exitf("Failed to read release file %q: %v", *release, err)
 	}
 
-	bundle, err := createBundle(*logURL, releaseRaw, lSigV)
+	bundle, err := createBundle(ctx, *logURL, releaseRaw, lSigV)
 	if err != nil {
 		glog.Exitf("Failed to create ProofBundle: %v", err)
 	}
@@ -83,7 +88,7 @@ func main() {
 	}
 }
 
-func createBundle(logURL string, release []byte, lSigV note.Verifier) (*api.ProofBundle, error) {
+func createBundle(ctx context.Context, logURL string, release []byte, lSigV note.Verifier) (*api.ProofBundle, error) {
 	root, err := url.Parse(logURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse log URL %q: %v", logURL, err)
@@ -103,7 +108,16 @@ func createBundle(logURL string, release []byte, lSigV note.Verifier) (*api.Proo
 	leafHash := h.HashLeaf(release)
 	lv := logverifier.New(h)
 	// Wait for inclusion
+	ticker := time.NewTicker(time.Millisecond)
+	defer ticker.Stop()
 	for {
+		select {
+		case <-ticker.C:
+			ticker.Reset(5 * time.Second)
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
+
 		if err := st.Update(); err != nil {
 			return nil, fmt.Errorf("failed to update LogState: %v", err)
 		}
@@ -115,7 +129,6 @@ func createBundle(logURL string, release []byte, lSigV note.Verifier) (*api.Proo
 				return nil, fmt.Errorf("failed to look up leaf index: %v", err)
 			}
 			glog.Infof("Leaf not [yet] sequenced, retrying")
-			time.Sleep(5 * time.Second)
 			continue
 		}
 
