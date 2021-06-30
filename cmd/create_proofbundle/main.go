@@ -37,10 +37,10 @@ import (
 )
 
 var (
-	release    = flag.String("release", "armory-drive.release", "Path to release metadata file")
-	logURL     = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
-	logPubKey  = flag.String("log_pubkey", "armory-drive-log-test+a5aae457+AbDoiIsZgSk5H0v0LjKPKv5dAMb0IfB47tocFtGmyW44", "The log's public key")
-	outputFile = flag.String("output", "", "Path to write output file to, leave unset to write to stdout")
+	release       = flag.String("release", "armory-drive.release", "Path to release metadata file")
+	logURL        = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
+	logPubKeyFile = flag.String("log_pubkey_file", "", "Path to file containing the log's public key")
+	outputFile    = flag.String("output", "", "Path to write output file to, leave unset to write to stdout")
 )
 
 func main() {
@@ -50,7 +50,11 @@ func main() {
 		glog.Exitf("Invalid flags:\n%s", err)
 	}
 
-	lSigV, err := note.NewVerifier(*logPubKey)
+	pkRaw, err := os.ReadFile(*logPubKeyFile)
+	if err != nil {
+		glog.Exitf("Unable to read log's public key from %q: %v", *logPubKeyFile, err)
+	}
+	lSigV, err := note.NewVerifier(string(pkRaw))
 	if err != nil {
 		glog.Exitf("Unable to create new log signature verifier: %v", err)
 	}
@@ -152,7 +156,7 @@ func checkFlags() error {
 	}
 	checkNotEmpty("release", *release)
 	checkNotEmpty("log_url", *logURL)
-	checkNotEmpty("log_pubkey", *logPubKey)
+	checkNotEmpty("log_pubkey_file", *logPubKeyFile)
 
 	if !strings.HasSuffix(*logURL, "/") {
 		errs = append(errs, "--log_url must end with a '/'")
