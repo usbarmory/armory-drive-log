@@ -326,14 +326,8 @@ github.com/google/trillian v1.3.14-0.20210409160123-c5ea3abd4a41/go.mod h1:1dPv0
 github.com/google/trillian v1.3.14-0.20210511103300-67b5f349eefa/go.mod h1:s4jO3Ai4NSvxucdvqUHON0bCqJyoya32eNw6XJwsmNc=
 github.com/google/trillian v1.3.14-0.20210629100747-d06638f9d2fb h1:yeHtIX6OICHMk4i8+mzZeYLcGXD5WvT4lfhhF/1MAaI=
 github.com/google/trillian v1.3.14-0.20210629100747-d06638f9d2fb/go.mod h1:Q959//o0gl8oMt92EQCmgoG1bgLmptrBT7ArV281XW0=
-github.com/google/trillian-examples v0.0.0-20210629140754-b2a641c1329a h1:v7vBKrza5hbRXfm4q4Bpf3fdk9da0rg85PXTzRDZ1vA=
-github.com/google/trillian-examples v0.0.0-20210629140754-b2a641c1329a/go.mod h1:Xm6ZXezVUpfDMxjSr2DxdhlNdoGvfkLEQrU7fHJd9uc=
-github.com/google/trillian-examples v0.0.0-20210629160522-bd61494bffc8 h1:28z3CPd31x/vW5BE//dDADpRlqFv083bqiZNKJ7qnMc=
-github.com/google/trillian-examples v0.0.0-20210629160522-bd61494bffc8/go.mod h1:Xm6ZXezVUpfDMxjSr2DxdhlNdoGvfkLEQrU7fHJd9uc=
-github.com/google/trillian-examples v0.0.0-20210630160956-ae33f63e85a0 h1:qdJBQmLTFaSCAivQkZdlnQS/GOypk+OHs5lD/WXLxYk=
-github.com/google/trillian-examples v0.0.0-20210630160956-ae33f63e85a0/go.mod h1:a2C4yPF27ApsiDb+4Zs/Y9zfwEmGv1gKwm/rlPYFE+w=
-github.com/google/trillian-examples v0.0.0-20210630165623-267fb50f0b55 h1:eTDTFWcvbFcwOmpFfgofgFJRRL2LLCngqbZj0Cjv0uU=
-github.com/google/trillian-examples v0.0.0-20210630165623-267fb50f0b55/go.mod h1:a2C4yPF27ApsiDb+4Zs/Y9zfwEmGv1gKwm/rlPYFE+w=
+github.com/google/trillian-examples v0.0.0-20210630144057-5272a31d4a4c h1:dNb6Fp37X9YOnNl7EgHMRNOxvi5AEy1LR7gEtLkSfks=
+github.com/google/trillian-examples v0.0.0-20210630144057-5272a31d4a4c/go.mod h1:a2C4yPF27ApsiDb+4Zs/Y9zfwEmGv1gKwm/rlPYFE+w=
 github.com/google/uuid v0.0.0-20161128191214-064e2069ce9c/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
@@ -1152,7 +1146,6 @@ google.golang.org/grpc v1.36.0/go.mod h1:qjiiYl8FncCW8feJPdyg3v6XW24KsRHe+dy9BAG
 google.golang.org/grpc v1.36.1/go.mod h1:qjiiYl8FncCW8feJPdyg3v6XW24KsRHe+dy9BAGRRjU=
 google.golang.org/grpc v1.37.0/go.mod h1:NREThFqKR1f3iQ6oBuvc5LadQuXVGo9rkm5ZGrQdJfM=
 google.golang.org/grpc v1.37.1/go.mod h1:NREThFqKR1f3iQ6oBuvc5LadQuXVGo9rkm5ZGrQdJfM=
-google.golang.org/grpc v1.38.0 h1:/9BgsAsa5nWe26HqOlvlgJnqBuktYOLCgjCPqsa56W0=
 google.golang.org/grpc v1.38.0/go.mod h1:NREThFqKR1f3iQ6oBuvc5LadQuXVGo9rkm5ZGrQdJfM=
 google.golang.org/grpc v1.39.0 h1:Klz8I9kdtkIN6EpHHUOMLCYhTn/2WAe5a0s1hcBkdTI=
 google.golang.org/grpc v1.39.0/go.mod h1:PImNr+rS9TWYb2O4/emRugxiyHZ5JyHW5F+RPnDzfrE=
