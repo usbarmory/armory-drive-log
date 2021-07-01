@@ -100,7 +100,7 @@ func createBundle(ctx context.Context, logURL string, release []byte, lSigV note
 
 	h := hasher.DefaultHasher
 
-	st, err := client.NewLogStateTracker(f, h, nil, lSigV)
+	st, err := client.NewLogStateTracker(ctx, f, h, nil, lSigV)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new LogStateTracker: %v", err)
 	}
@@ -118,12 +118,12 @@ func createBundle(ctx context.Context, logURL string, release []byte, lSigV note
 			return nil, ctx.Err()
 		}
 
-		if err := st.Update(); err != nil {
+		if err := st.Update(ctx); err != nil {
 			return nil, fmt.Errorf("failed to update LogState: %v", err)
 		}
 		cp := st.LatestConsistent
 
-		idx, err := client.LookupIndex(f, leafHash)
+		idx, err := client.LookupIndex(ctx, f, leafHash)
 		if err != nil {
 			if !errors.Is(err, os.ErrNotExist) {
 				return nil, fmt.Errorf("failed to look up leaf index: %v", err)
@@ -132,12 +132,12 @@ func createBundle(ctx context.Context, logURL string, release []byte, lSigV note
 			continue
 		}
 
-		pb, err := client.NewProofBuilder(cp, h.HashChildren, f)
+		pb, err := client.NewProofBuilder(ctx, cp, h.HashChildren, f)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create new ProofBuilder: %v", err)
 		}
 
-		ip, err := pb.InclusionProof(idx)
+		ip, err := pb.InclusionProof(ctx, idx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create inclusion proof for leaf %d: %v", idx, err)
 		}
@@ -148,7 +148,7 @@ func createBundle(ctx context.Context, logURL string, release []byte, lSigV note
 		break
 	}
 
-	allLeafHashes, err := client.FetchLeafHashes(f, 0, st.LatestConsistent.Size, st.LatestConsistent.Size)
+	allLeafHashes, err := client.FetchLeafHashes(ctx, f, 0, st.LatestConsistent.Size, st.LatestConsistent.Size)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch leaf hashes [0, %d): %v", st.LatestConsistent.Size, err)
 	}
@@ -188,26 +188,30 @@ func newFetcher(root *url.URL) (client.Fetcher, error) {
 		return nil, fmt.Errorf("unsupported URL scheme %s", root.Scheme)
 	}
 
-	f := func(p string) ([]byte, error) {
+	f := func(ctx context.Context, p string) ([]byte, error) {
 		u, err := root.Parse(p)
 		if err != nil {
 			return nil, err
 		}
-		return get(u)
+		return get(ctx, u)
 	}
 	return f, nil
 }
 
-var getByScheme = map[string]func(*url.URL) ([]byte, error){
+var getByScheme = map[string]func(context.Context, *url.URL) ([]byte, error){
 	"http":  readHTTP,
 	"https": readHTTP,
-	"file": func(u *url.URL) ([]byte, error) {
+	"file": func(_ context.Context, u *url.URL) ([]byte, error) {
 		return ioutil.ReadFile(u.Path)
 	},
 }
 
-func readHTTP(u *url.URL) ([]byte, error) {
-	resp, err := http.Get(u.String())
+func readHTTP(ctx context.Context, u *url.URL) ([]byte, error) {
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.DefaultClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}
