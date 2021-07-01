@@ -50,7 +50,7 @@ func main() {
 	flag.Parse()
 	ctx := context.Background()
 
-	st, isNew, err := stateTrackerFromFlags()
+	st, isNew, err := stateTrackerFromFlags(ctx)
 	if err != nil {
 		glog.Exitf("Failed to create new LogStateTracker: %v", err)
 	}
@@ -74,7 +74,7 @@ func main() {
 
 	if isNew {
 		// This monitor has no memory of running before, so let's catch up with the log.
-		if err := monitor.From(0); err != nil {
+		if err := monitor.From(ctx, 0); err != nil {
 			glog.Exitf("monitor.From(%d): %v", 0, err)
 		}
 	}
@@ -84,12 +84,12 @@ func main() {
 	defer ticker.Stop()
 	for {
 		lastHead := st.LatestConsistent.Size
-		if err := st.Update(); err != nil {
+		if err := st.Update(ctx); err != nil {
 			glog.Exitf("Failed to update checkpoint: %q", err)
 		}
 		if st.LatestConsistent.Size > lastHead {
 			glog.V(1).Infof("Found new checkpoint for tree size %d, fetching new leaves", st.LatestConsistent.Size)
-			if err := monitor.From(lastHead); err != nil {
+			if err := monitor.From(ctx, lastHead); err != nil {
 				glog.Exitf("monitor.From(%d): %v", lastHead, err)
 			}
 		} else {
@@ -116,19 +116,19 @@ type Monitor struct {
 
 // From checks the leaves from `start` up to the checkpoint from the state tracker.
 // Upon reaching the end of the leaves, the checkpoint is persisted in the state file.
-func (m *Monitor) From(start uint64) error {
+func (m *Monitor) From(ctx context.Context, start uint64) error {
 	fromCP := m.st.LatestConsistent
-	pb, err := client.NewProofBuilder(fromCP, m.st.Hasher.HashChildren, m.st.Fetcher)
+	pb, err := client.NewProofBuilder(ctx, fromCP, m.st.Hasher.HashChildren, m.st.Fetcher)
 	if err != nil {
 		return fmt.Errorf("failed to construct proof builder: %v", err)
 	}
 	for i := start; i < fromCP.Size; i++ {
-		rawLeaf, err := client.GetLeaf(m.st.Fetcher, i)
+		rawLeaf, err := client.GetLeaf(ctx, m.st.Fetcher, i)
 		if err != nil {
 			return fmt.Errorf("failed to get leaf at index %d: %v", i, err)
 		}
 		hash := m.st.Hasher.HashLeaf(rawLeaf)
-		ip, err := pb.InclusionProof(i)
+		ip, err := pb.InclusionProof(ctx, i)
 		if err != nil {
 			return fmt.Errorf("failed to get inclusion proof for index %d: %v", i, err)
 		}
@@ -159,7 +159,7 @@ func (m *Monitor) From(start uint64) error {
 // stateTrackerFromFlags constructs a state tracker based on the flags provided to the main invocation.
 // The checkpoint returned will be the checkpoint representing this monitor's view of the log history.
 // A boolean is returned that is true iff the checkpoint was fetched from the log to initialize state.
-func stateTrackerFromFlags() (client.LogStateTracker, bool, error) {
+func stateTrackerFromFlags(ctx context.Context) (client.LogStateTracker, bool, error) {
 	if len(*stateFile) == 0 {
 		return client.LogStateTracker{}, false, errors.New("--state_file required")
 	}
@@ -186,7 +186,7 @@ func stateTrackerFromFlags() (client.LogStateTracker, bool, error) {
 		return client.LogStateTracker{}, false, fmt.Errorf("unable to create new log signature verifier: %w", err)
 	}
 
-	lst, err := client.NewLogStateTracker(f, hasher.DefaultHasher, state, lSigV)
+	lst, err := client.NewLogStateTracker(ctx, f, hasher.DefaultHasher, state, lSigV)
 	return lst, state == nil, err
 }
 
@@ -196,7 +196,7 @@ func newFetcher(root *url.URL) (client.Fetcher, error) {
 		return nil, fmt.Errorf("unsupported URL scheme %s", s)
 	}
 
-	return func(p string) ([]byte, error) {
+	return func(ctx context.Context, p string) ([]byte, error) {
 		u, err := root.Parse(p)
 		if err != nil {
 			return nil, err
