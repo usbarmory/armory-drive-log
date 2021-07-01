@@ -53,6 +53,10 @@ func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frS
 		}
 	}
 
+	if l := uint64(len(pb.LeafHashes)); l != newCP.Size {
+		return fmt.Errorf("invalid ProofBundle - %d leafhashes for Checkpoint of size %d", l, newCP.Size)
+	}
+
 	// Next, ensure firmware manifest is discoverable:
 	//  - prove its inclusion under the new checkpoint, and
 	//  - prove that the new checkpoint is consistent with the device's old checkpoint
@@ -75,19 +79,20 @@ func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frS
 		if !manifestFound {
 			manifestFound = bytes.Equal(leafHash, manifestHash)
 		}
-		if !oldCPFound {
+		if tree.End() == oldCP.Size {
 			oldCPFound = bytes.Equal(r, oldCP.Hash)
 		}
-		if !newCPFound {
+		if tree.End() == newCP.Size {
 			newCPFound = bytes.Equal(r, newCP.Hash)
 		}
 	}
 
+	// If we don't have an oldCP (or oldCP is genuinely zero sized), then all future CPs are consistent with it.
 	if !oldCPFound && oldCP.Size > 0 {
 		return fmt.Errorf("unable to prove consistency - failed to recreate old checkpoint root %x", oldCP.Hash)
 	}
 	if !newCPFound {
-		return fmt.Errorf("unable to prove consistency - failed to locate new checpoint hash %x", newCP.Hash)
+		return fmt.Errorf("unable to prove consistency - failed to locate new checkpoint hash %x", newCP.Hash)
 	}
 	if !manifestFound {
 		return fmt.Errorf("unable to prove inclusion - failed to locate manifest hash %x", manifestHash)
