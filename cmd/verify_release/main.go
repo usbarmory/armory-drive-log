@@ -27,14 +27,29 @@ import (
 )
 
 var (
-	publicKeyFile = flag.String("public_key", "", "Path to file containing the public key used to sign the manifest")
+	publicKeyFile = flag.String("public_key", "", "Path to file containing the public key used to sign the manifest. If unset, uses the contents of the RELEASE_PUBLIC_KEY environment variable.")
 	manifest      = flag.String("manifest", "", "Path to the signed manifest")
 )
 
 func main() {
+	var pubkey string
+
 	flag.Parse()
 	if err := validateFlags(); err != nil {
 		glog.Exitf("Invalid flag(s):\n%s", err)
+	}
+
+	if len(*publicKeyFile) > 0 {
+		k, err := os.ReadFile(*publicKeyFile)
+		if err != nil {
+			glog.Exitf("failed to read public key file: %v", err)
+		}
+		pubkey = string(k)
+	} else {
+		pubkey = os.Getenv("RELEASE_PUBLIC_KEY")
+		if len(pubkey) == 0 {
+			glog.Exitf("RELEASE_PUBLIC_KEY environment variable not found.")
+		}
 	}
 
 	msg, err := os.ReadFile(*manifest)
@@ -43,7 +58,7 @@ func main() {
 	}
 
 	glog.Info("Verifying signature...")
-	body, err := verify(msg)
+	body, err := verify(msg, pubkey)
 	if err != nil {
 		glog.Exitf("Failed to verify signature: %v", err)
 	}
@@ -52,13 +67,8 @@ func main() {
 }
 
 // verify verifies the passed Go sumdb's note
-func verify(msg []byte) ([]byte, error) {
-	k, err := os.ReadFile(*publicKeyFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read public key file: %v", err)
-	}
-
-	verifier, err := note.NewVerifier(string(k))
+func verify(msg []byte, pubkey string) ([]byte, error) {
+	verifier, err := note.NewVerifier(pubkey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialise key: %v", err)
 	}
@@ -79,7 +89,6 @@ func validateFlags() error {
 			errs = append(errs, fmt.Sprintf("--%s can't be empty", n))
 		}
 	}
-	checkEmpty("public_key", *publicKeyFile)
 	checkEmpty("manifest", *manifest)
 
 	if len(errs) > 0 {
