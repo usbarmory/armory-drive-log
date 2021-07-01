@@ -16,12 +16,14 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/f-secure-foundry/armory-drive-log/api"
 	"github.com/golang/glog"
 	"golang.org/x/mod/sumdb/note"
 )
@@ -62,6 +64,13 @@ func main() {
 	if err != nil {
 		glog.Exitf("Failed to verify signature: %v", err)
 	}
+
+	release := &api.FirmwareRelease{}
+	if err = json.Unmarshal(body, &release); err != nil {
+		glog.Exitf("Firmware release manifest format error: %v", err)
+	}
+
+	// TODO: perform deeper check on FirmwareRelease struct
 
 	fmt.Println(string(body))
 }
