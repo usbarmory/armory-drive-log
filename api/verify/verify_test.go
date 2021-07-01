@@ -50,7 +50,7 @@ func buildLog(t *testing.T, leafHashes [][]byte) [][]byte {
 	roots := make([][]byte, 0)
 	h := hasher.DefaultHasher
 	tree := (&compact.RangeFactory{Hash: h.HashChildren}).NewEmptyRange(0)
-	for _, lh := range testLeafHashes {
+	for _, lh := range leafHashes {
 		if err := tree.Append(lh, nil); err != nil {
 			t.Fatalf("Failed to append: %v", err)
 		}
@@ -88,7 +88,7 @@ func TestBundle(t *testing.T) {
 			desc: "works",
 			pb: api.ProofBundle{
 				FirmwareRelease: fw,
-				NewCheckpoint:   makeCheckpoint(t, len(testLeafHashes), roots[len(roots)-1], logSig),
+				NewCheckpoint:   makeCheckpoint(t, len(leafHashes), roots[len(roots)-1], logSig),
 				LeafHashes:      leafHashes,
 			},
 			oldCP: api.Checkpoint{
@@ -100,20 +100,21 @@ func TestBundle(t *testing.T) {
 			desc: "wrong firmware",
 			pb: api.ProofBundle{
 				FirmwareRelease: fw,
-				NewCheckpoint:   makeCheckpoint(t, len(testLeafHashes), roots[len(roots)-1], logSig),
+				NewCheckpoint:   makeCheckpoint(t, len(leafHashes), roots[len(roots)-1], logSig),
 				LeafHashes:      leafHashes,
 			},
 			oldCP: api.Checkpoint{
 				Size: 1,
 				Hash: roots[0],
 			},
+			// Unexpected firmware hash
 			fwHash:  []byte("My good man, these are bananas!"),
 			wantErr: true,
 		}, {
 			desc: "bad consistency - can't prove old CP",
 			pb: api.ProofBundle{
 				FirmwareRelease: fw,
-				NewCheckpoint:   makeCheckpoint(t, len(testLeafHashes), roots[len(roots)-1], logSig),
+				NewCheckpoint:   makeCheckpoint(t, len(leafHashes), roots[len(roots)-1], logSig),
 				LeafHashes:      leafHashes,
 			},
 			oldCP: api.Checkpoint{
@@ -127,8 +128,9 @@ func TestBundle(t *testing.T) {
 			desc: "bad consistency - can't prove new CP",
 			pb: api.ProofBundle{
 				FirmwareRelease: fw,
-				NewCheckpoint:   makeCheckpoint(t, len(testLeafHashes), []byte("This root not present"), logSig),
-				LeafHashes:      leafHashes,
+				// Provide an inconsistent new CP root hash
+				NewCheckpoint: makeCheckpoint(t, len(leafHashes), []byte("This root not present"), logSig),
+				LeafHashes:    leafHashes,
 			},
 			oldCP: api.Checkpoint{
 				Size: 1,
@@ -140,8 +142,9 @@ func TestBundle(t *testing.T) {
 			desc: "bad consistency - can't prove manifest",
 			pb: api.ProofBundle{
 				FirmwareRelease: fw,
-				NewCheckpoint:   makeCheckpoint(t, len(testLeafHashes), roots[len(roots)-1], logSig),
-				LeafHashes:      append(testLeafHashes[0:len(testLeafHashes)-1], []byte("wrong manifest hash")),
+				NewCheckpoint:   makeCheckpoint(t, len(leafHashes), roots[len(roots)-1], logSig),
+				// Replace manifest hash with one which doesn't match
+				LeafHashes: append(append([][]byte{}, leafHashes[0:len(leafHashes)-1]...), []byte("wrong manifest hash")),
 			},
 			oldCP: api.Checkpoint{
 				Size: 1,
@@ -154,7 +157,7 @@ func TestBundle(t *testing.T) {
 			pb: api.ProofBundle{
 				// Invalid - signed by log's key
 				FirmwareRelease: makeFirmwareRelease(t, firmwareImageHash, logSig),
-				NewCheckpoint:   makeCheckpoint(t, len(testLeafHashes), roots[len(roots)-1], logSig),
+				NewCheckpoint:   makeCheckpoint(t, len(leafHashes), roots[len(roots)-1], logSig),
 			},
 			oldCP: api.Checkpoint{
 				Size: 1,
@@ -167,7 +170,7 @@ func TestBundle(t *testing.T) {
 			pb: api.ProofBundle{
 				FirmwareRelease: makeFirmwareRelease(t, firmwareImageHash, fwSig),
 				// Invalid - signed by firmware key
-				NewCheckpoint: makeCheckpoint(t, len(testLeafHashes), roots[len(roots)-1], fwSig),
+				NewCheckpoint: makeCheckpoint(t, len(leafHashes), roots[len(roots)-1], fwSig),
 				LeafHashes:    leafHashes,
 			},
 			oldCP: api.Checkpoint{
