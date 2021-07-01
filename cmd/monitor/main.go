@@ -19,7 +19,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -120,7 +119,6 @@ type Monitor struct {
 func (m *Monitor) From(start uint64) error {
 	fromCP := m.st.LatestConsistent
 	pb, err := client.NewProofBuilder(fromCP, m.st.Hasher.HashChildren, m.st.Fetcher)
-
 	if err != nil {
 		return fmt.Errorf("failed to construct proof builder: %v", err)
 	}
@@ -134,13 +132,9 @@ func (m *Monitor) From(start uint64) error {
 		if err != nil {
 			return fmt.Errorf("failed to get inclusion proof for index %d: %v", i, err)
 		}
-		wantRoot, err := m.st.Verifier.RootFromInclusionProof(int64(i), int64(fromCP.Size), ip, hash)
-		if err != nil {
-			return fmt.Errorf("failed to calculate root from inclusion proof at index %d: %v", i, err)
-		}
-		if !bytes.Equal(wantRoot, fromCP.Hash) {
-			return fmt.Errorf("failed to verify inclusion proof for leaf %d.\ncheckpoint: %x\ncalculated: %x",
-				i, fromCP.Hash, wantRoot)
+
+		if err := m.st.Verifier.VerifyInclusionProof(int64(i), int64(fromCP.Size), ip, fromCP.Hash, hash); err != nil {
+			return fmt.Errorf("VerifyInclusionProof() %d: %v", i, err)
 		}
 
 		// XXX: this is unexpected. the hash is over the data with the trailing newline but we need to remove it
@@ -167,16 +161,15 @@ func (m *Monitor) From(start uint64) error {
 // A boolean is returned that is true iff the checkpoint was fetched from the log to initialize state.
 func stateTrackerFromFlags() (client.LogStateTracker, bool, error) {
 	if len(*stateFile) == 0 {
-		glog.Exit("--state_file required")
+		return client.LogStateTracker{}, false, errors.New("--state_file required")
 	}
 
 	state, err := ioutil.ReadFile(*stateFile)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			glog.Infof("State file %q missing. Will trust first checkpoint received from log.", *stateFile)
-		} else {
+		if !errors.Is(err, os.ErrNotExist) {
 			return client.LogStateTracker{}, false, fmt.Errorf("could not read state file %q: %w", *stateFile, err)
 		}
+		glog.Infof("State file %q missing. Will trust first checkpoint received from log.", *stateFile)
 	}
 
 	root, err := url.Parse(*logURL)
