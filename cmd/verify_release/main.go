@@ -29,9 +29,11 @@ import (
 )
 
 var (
-	publicKeyFile = flag.String("public_key", "", "Path to file containing the public key used to sign the manifest. If unset, uses the contents of the RELEASE_PUBLIC_KEY environment variable.")
+	publicKeyFile = flag.String("public_key", "", "Path to file containing the public key used to sign the manifest. If unset, uses the contents of the environment variable.")
 	manifest      = flag.String("manifest", "", "Path to the signed manifest")
 )
+
+const pubkeyEnv = "FR_PUBKEY"
 
 func main() {
 	var pubkey string
@@ -48,9 +50,9 @@ func main() {
 		}
 		pubkey = string(k)
 	} else {
-		pubkey = os.Getenv("RELEASE_PUBLIC_KEY")
+		pubkey = os.Getenv(pubkeyEnv)
 		if len(pubkey) == 0 {
-			glog.Exitf("RELEASE_PUBLIC_KEY environment variable not found.")
+			glog.Exitf("%s environment variable not found.", pubkeyEnv)
 		}
 	}
 
