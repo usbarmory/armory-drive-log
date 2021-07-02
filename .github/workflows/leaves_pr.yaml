@@ -5,11 +5,29 @@ jobs:
     runs-on: ubuntu-latest
     name: Validate pending leaves
     steps:
+
     - uses: actions/checkout@v2
       with:
          fetch-depth: 0
+
     - name: Leaf validator step
       id: leaf_validator
       uses: google/trillian-examples/serverless/deploy/github/leaf_validator@master
       with:
         log_dir: './log'
+
+    - name: Install golang
+      run: |
+        cd /tmp
+        wget https://golang.org/dl/go1.16.5.linux-amd64.tar.gz
+        tar xvf go1.16.5.linux-amd64.tar.gz
+
+    - name: Compile verify_release tool
+      run: |
+        /tmp/go/bin/go build -o /tmp/verify_release ${GITHUB_WORKSPACE}/cmd/verify_release
+
+    - name: Signature validator step
+      id: signature_validator
+      run: ${GITHUB_WORKSPACE}/.github/workflows/signature_validation.sh
+      env:
+        FR_PUBKEY: ${{ secrets.FR_PUBKEY}}
