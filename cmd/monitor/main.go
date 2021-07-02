@@ -28,7 +28,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/f-secure-foundry/armory-drive-log/api"
@@ -137,11 +136,11 @@ func (m *Monitor) From(ctx context.Context, start uint64) error {
 			return fmt.Errorf("VerifyInclusionProof() %d: %v", i, err)
 		}
 
-		// XXX: this is unexpected. the hash is over the data with the trailing newline but we need to remove it
-		// in order to make this data into a valid note.
-		trimmedLeaf := strings.TrimSuffix(string(rawLeaf), "\n")
-		releaseNote, err := note.Open([]byte(trimmedLeaf), m.releaseVerifiers)
+		releaseNote, err := note.Open([]byte(rawLeaf), m.releaseVerifiers)
 		if err != nil {
+			if e, ok := err.(*note.UnverifiedNoteError); ok && len(e.Note.UnverifiedSigs) > 0 {
+				return fmt.Errorf("unknown signer %q for leaf at index %d: %v", e.Note.UnverifiedSigs[0].Name, i, err)
+			}
 			return fmt.Errorf("failed to open leaf note at index %d: %v", i, err)
 		}
 
