@@ -30,4 +30,4 @@ jobs:
       id: signature_validator
       run: ${GITHUB_WORKSPACE}/.github/workflows/signature_validation.sh
       env:
-        FR_PUBKEY: ${{ secrets.FR_PUBKEY}}
+        FR_PUBKEY: ${{ secrets.FR_PUBKEY }}
