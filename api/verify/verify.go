@@ -35,7 +35,8 @@ import (
 //  3. verify that the first newCP.Size leaf hashes provided can reconstruct pb.NewCheckpoint.Hash
 //  4. verify that the hash of pb.FirmwareRelease is among the list of leaf hashes provided
 //  5. check that the signature on the FirmwareRelease manifest is valid
-//  6. check that the artifact hashes are the same as the FirmwareRelease manifest claims they should be.
+//  6. check that all provided artifact hashes are present in the FirmwareRelease manifist, and are
+//     identical to the values the manifest claims they should be.
 //
 // If all of these checks hold, then we are sufficiently convinced that the firmware update is discoverable by others.
 //
