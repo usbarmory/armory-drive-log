@@ -72,17 +72,22 @@ func TestBundle(t *testing.T) {
 
 	h := hasher.DefaultHasher
 	firmwareImageHash := []byte("Firmware Hash")
-	fw := makeFirmwareRelease(t, firmwareImageHash, fwSig)
+	commitArtifacts := map[string][]byte{
+		"FirmwareImage": firmwareImageHash,
+		"Thingy":        []byte("Magig"),
+		"Art":           []byte("Fact"),
+	}
+	fw := makeFirmwareRelease(t, commitArtifacts, fwSig)
 	manifestHash := h.HashLeaf(fw)
 	leafHashes := append(testLeafHashes, manifestHash)
 	roots := buildLog(t, leafHashes)
 
 	for _, test := range []struct {
-		desc    string
-		pb      api.ProofBundle
-		oldCP   api.Checkpoint
-		fwHash  []byte
-		wantErr bool
+		desc          string
+		pb            api.ProofBundle
+		oldCP         api.Checkpoint
+		wantArtifacts map[string][]byte
+		wantErr       bool
 	}{
 		{
 			desc: "works",
@@ -95,7 +100,10 @@ func TestBundle(t *testing.T) {
 				Size: 1,
 				Hash: roots[0],
 			},
-			fwHash: firmwareImageHash,
+			wantArtifacts: map[string][]byte{
+				"FirmwareImage": firmwareImageHash,
+				"Thingy":        []byte("Magig"),
+			},
 		}, {
 			desc: "wrong firmware",
 			pb: api.ProofBundle{
@@ -107,8 +115,27 @@ func TestBundle(t *testing.T) {
 				Size: 1,
 				Hash: roots[0],
 			},
-			// Unexpected firmware hash
-			fwHash:  []byte("My good man, these are bananas!"),
+			// Unexpected FirmwareImage hash
+			wantArtifacts: map[string][]byte{
+				"FirmwareImage": []byte("Have a banana"),
+				"Thingy":        []byte("Magig"),
+			},
+			wantErr: true,
+		}, {
+			desc: "missing artifact",
+			pb: api.ProofBundle{
+				FirmwareRelease: fw,
+				NewCheckpoint:   makeCheckpoint(t, len(leafHashes), roots[len(roots)-1], logSig),
+				LeafHashes:      leafHashes,
+			},
+			oldCP: api.Checkpoint{
+				Size: 1,
+				Hash: roots[0],
+			},
+			// This artifact isn't committed to by the FirmwareRelease:
+			wantArtifacts: map[string][]byte{
+				"Sekret": []byte("Squirrel"),
+			},
 			wantErr: true,
 		}, {
 			desc: "bad consistency - can't prove old CP",
@@ -122,7 +149,9 @@ func TestBundle(t *testing.T) {
 				// Not going to be able to recreate this hash from the test leaves:
 				Hash: []byte("This hash is not reconstructible"),
 			},
-			fwHash:  firmwareImageHash,
+			wantArtifacts: map[string][]byte{
+				"FirmwareImage": firmwareImageHash,
+			},
 			wantErr: true,
 		}, {
 			desc: "bad consistency - can't prove new CP",
@@ -136,7 +165,9 @@ func TestBundle(t *testing.T) {
 				Size: 1,
 				Hash: roots[0],
 			},
-			fwHash:  firmwareImageHash,
+			wantArtifacts: map[string][]byte{
+				"FirmwareImage": firmwareImageHash,
+			},
 			wantErr: true,
 		}, {
 			desc: "bad consistency - can't prove manifest",
@@ -150,25 +181,29 @@ func TestBundle(t *testing.T) {
 				Size: 1,
 				Hash: roots[0],
 			},
-			fwHash:  firmwareImageHash,
+			wantArtifacts: map[string][]byte{
+				"FirmwareImage": firmwareImageHash,
+			},
 			wantErr: true,
 		}, {
 			desc: "invalid firmware manifest signature",
 			pb: api.ProofBundle{
 				// Invalid - signed by log's key
-				FirmwareRelease: makeFirmwareRelease(t, firmwareImageHash, logSig),
+				FirmwareRelease: makeFirmwareRelease(t, commitArtifacts, logSig),
 				NewCheckpoint:   makeCheckpoint(t, len(leafHashes), roots[len(roots)-1], logSig),
 			},
 			oldCP: api.Checkpoint{
 				Size: 1,
 				Hash: roots[0],
 			},
-			fwHash:  firmwareImageHash,
+			wantArtifacts: map[string][]byte{
+				"FirmwareImage": firmwareImageHash,
+			},
 			wantErr: true,
 		}, {
 			desc: "invalid log checkpoint signature",
 			pb: api.ProofBundle{
-				FirmwareRelease: makeFirmwareRelease(t, firmwareImageHash, fwSig),
+				FirmwareRelease: makeFirmwareRelease(t, commitArtifacts, fwSig),
 				// Invalid - signed by firmware key
 				NewCheckpoint: makeCheckpoint(t, len(leafHashes), roots[len(roots)-1], fwSig),
 				LeafHashes:    leafHashes,
@@ -177,12 +212,14 @@ func TestBundle(t *testing.T) {
 				Size: 1,
 				Hash: roots[0],
 			},
-			fwHash:  firmwareImageHash,
+			wantArtifacts: map[string][]byte{
+				"FirmwareImage": firmwareImageHash,
+			},
 			wantErr: true,
 		},
 	} {
 		t.Run(test.desc, func(t *testing.T) {
-			err := Bundle(test.pb, test.oldCP, logSigV, fwSigV, test.fwHash)
+			err := Bundle(test.pb, test.oldCP, logSigV, fwSigV, test.wantArtifacts)
 			if gotErr := err != nil; gotErr != test.wantErr {
 				t.Fatalf("wantErr: %v, but got: %v", test.wantErr, err)
 			}
@@ -208,18 +245,15 @@ func mustMakeVerifier(t *testing.T, pubK string) note.Verifier {
 	return v
 }
 
-func makeFirmwareRelease(t *testing.T, fwHash []byte, sig note.Signer) []byte {
+func makeFirmwareRelease(t *testing.T, artifacts map[string][]byte, sig note.Signer) []byte {
 	fr := api.FirmwareRelease{
-		Description: "A release",
-		PlatformID:  "7½",
-		Revision:    "Helps with tests",
-		ArtifactSHA256: map[string][]byte{
-			api.FirmwareArtifactName: fwHash,
-			"Art":                    []byte("Fact"),
-		},
-		SourceURL:    "https://www.youtube.com/watch?v=IC7l3V1nhWc&t=0s",
-		SourceSHA256: []byte("One two three four five. Six seven eight nine ten. Eleven twelve."),
-		ToolChain:    "Snap on",
+		Description:    "A release",
+		PlatformID:     "7½",
+		Revision:       "Helps with tests",
+		ArtifactSHA256: artifacts,
+		SourceURL:      "https://www.youtube.com/watch?v=IC7l3V1nhWc&t=0s",
+		SourceSHA256:   []byte("One two three four five. Six seven eight nine ten. Eleven twelve."),
+		ToolChain:      "Snap on",
 		BuildArgs: map[string]string{
 			"REV": "Lovejoy",
 		},
