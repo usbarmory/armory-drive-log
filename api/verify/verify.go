@@ -35,12 +35,12 @@ import (
 //  3. verify that the first newCP.Size leaf hashes provided can reconstruct pb.NewCheckpoint.Hash
 //  4. verify that the hash of pb.FirmwareRelease is among the list of leaf hashes provided
 //  5. check that the signature on the FirmwareRelease manifest is valid
-//  6. check that the hash of the firmware update (IMX) is the same as the FirmwareRelease manifest claims it should be.
+//  6. check that the artifact hashes are the same as the FirmwareRelease manifest claims they should be.
 //
 // If all of these checks hold, then we are sufficiently convinced that the firmware update is discoverable by others.
 //
 // TODO(al): Extend to support witnesses.
-func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frSigV note.Verifier, firmwareHash []byte) error {
+func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frSigV note.Verifier, artifactHashes map[string][]byte) error {
 	// First, check the signature on the new CP.
 	newCP := &api.Checkpoint{}
 	{
@@ -110,14 +110,16 @@ func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frS
 		}
 	}
 
-	// Lastly, check that the provided firmware update image is the same as the one
+	// Lastly, check that the provided artifact hashes are the same as the ones
 	// claimed by the FirmwareRelease manifest.
-	expectedIMXHash, ok := fr.ArtifactSHA256[api.FirmwareArtifactName]
-	if !ok {
-		return fmt.Errorf("expected firmware artifact (%s) not present in FirmwareRelease", api.FirmwareArtifactName)
-	}
-	if !bytes.Equal(firmwareHash, expectedIMXHash) {
-		return fmt.Errorf("firmware hash (%x) does not match claimed hash from FirmwareRelease (%x)", firmwareHash, expectedIMXHash)
+	for artifact, expected := range artifactHashes {
+		h, ok := fr.ArtifactSHA256[artifact]
+		if !ok {
+			return fmt.Errorf("FirmwareRelease does not commit to artifact hash for %q", artifact)
+		}
+		if !bytes.Equal(expected, h) {
+			return fmt.Errorf("expected artifact hash for %q is %x, but FirmwareRelease claims %x", artifact, expected, h)
+		}
 	}
 
 	return nil
