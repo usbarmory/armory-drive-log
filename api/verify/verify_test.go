@@ -271,7 +271,7 @@ func makeFirmwareRelease(t *testing.T, artifacts map[string][]byte, sig note.Sig
 
 func makeCheckpoint(t *testing.T, size int, hash []byte, sig note.Signer) []byte {
 	t.Helper()
-	cp := fmt.Sprintf("%s\n%d\n%s\n", api.EcosystemV0, int64(size), base64.StdEncoding.EncodeToString(hash))
+	cp := fmt.Sprintf("%s\n%d\n%s\n", api.OriginV0, int64(size), base64.StdEncoding.EncodeToString(hash))
 	n, err := note.Sign(&note.Note{Text: cp}, sig)
 	if err != nil {
 		t.Fatalf("Failed to sign checkpoint: %v", err)

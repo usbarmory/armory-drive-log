@@ -22,14 +22,14 @@ import (
 	"strconv"
 )
 
-// EcosystemV0 is the Checkpoint ecosystem string for this usecase.
-const EcosystemV0 = "ArmoryDrive Log v0"
+// OriginV0 is the Checkpoint origin string for this log.
+// TODO: extract into flag
+const OriginV0 = "ArmoryDrive Log v0"
 
 // Checkpoint represents a minimal log checkpoint.
 type Checkpoint struct {
-	// Ecosystem is the ecosystem/version string.
-	// This will always be the EcosystemV0 string defined above.
-	Ecosystem string
+	// Origin is the unique identifier for the log issuing this checkpoint.
+	Origin string
 	// Size is the number of entries in the log at this checkpoint.
 	Size uint64
 	// Hash is the hash which commits to the contents of the entire log.
@@ -41,7 +41,7 @@ type Checkpoint struct {
 //
 // The supplied data is expected to begin with the following 3 lines of text,
 // each followed by a newline:
-//  - <ecosystem/version string>
+//  - <Origin string>
 //  - <decimal representation of log size>
 //  - <base64 representation of root hash>
 //
@@ -51,9 +51,10 @@ func (c *Checkpoint) Unmarshal(data []byte) error {
 	if len(l) < 4 {
 		return errors.New("invalid checkpoint - too few newlines")
 	}
-	eco := string(l[0])
-	if eco != EcosystemV0 {
-		return fmt.Errorf("invalid checkpoint - incorrect ecosystem %q", eco)
+	origin := string(l[0])
+	// TODO: extract this check elsewhere or pass in expected origin.
+	if origin != OriginV0 {
+		return fmt.Errorf("invalid checkpoint - incorrect origin %q", origin)
 	}
 	size, err := strconv.ParseUint(string(l[1]), 10, 64)
 	if err != nil {
@@ -67,9 +68,9 @@ func (c *Checkpoint) Unmarshal(data []byte) error {
 		return fmt.Errorf("invalid checkpoint - %d bytes of unexpected trailing data", xl)
 	}
 	*c = Checkpoint{
-		Ecosystem: eco,
-		Size:      size,
-		Hash:      h,
+		Origin: origin,
+		Size:   size,
+		Hash:   h,
 	}
 	return nil
 }
