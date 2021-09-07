@@ -31,9 +31,9 @@ func TestUnmarshalCheckpoint(t *testing.T) {
 			desc: "valid one",
 			m:    "ArmoryDrive Log v0\n123\nYmFuYW5hcw==\n",
 			want: Checkpoint{
-				Ecosystem: "ArmoryDrive Log v0",
-				Size:      123,
-				Hash:      []byte("bananas"),
+				Origin: "ArmoryDrive Log v0",
+				Size:   123,
+				Hash:   []byte("bananas"),
 			},
 		}, {
 			desc:    "wrong ecosystem",

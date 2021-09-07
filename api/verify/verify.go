@@ -52,6 +52,7 @@ func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frS
 		if err := newCP.Unmarshal([]byte(newCPRaw.Text)); err != nil {
 			return fmt.Errorf("failed to unmarshal NewCheckpoint: %v", err)
 		}
+		// TODO: verify newCP.Origin is as expected given logSigV.
 	}
 
 	if l := uint64(len(pb.LeafHashes)); l != newCP.Size {
