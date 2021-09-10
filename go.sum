@@ -337,6 +337,8 @@ github.com/google/trillian v1.3.14-0.20210902135231-6ff130e23e0c h1:q/rdEH87Uuxv
 github.com/google/trillian v1.3.14-0.20210902135231-6ff130e23e0c/go.mod h1:DMIvMok/Z7LlWVuuX8RbaKpkIkxdp+pnjfBHZt3Xi7I=
 github.com/google/trillian-examples v0.0.0-20210702151045-67ecd6bab7e0 h1:K+drnHkJiuyimLVPXkmK6YLlCig8od3RdJgicsmC37s=
 github.com/google/trillian-examples v0.0.0-20210702151045-67ecd6bab7e0/go.mod h1:a2C4yPF27ApsiDb+4Zs/Y9zfwEmGv1gKwm/rlPYFE+w=
+github.com/google/trillian-examples v0.0.0-20210909165703-c62749b7931e h1:c8Pwvvd4LEbGl+4wJfb7NhLVJStSZhRACktzAEXRUIQ=
+github.com/google/trillian-examples v0.0.0-20210909165703-c62749b7931e/go.mod h1:edUK1YmYDRV7m6BqN6DCGY4Nl+1lwVwtbCz2JEO/MbQ=
 github.com/google/uuid v0.0.0-20161128191214-064e2069ce9c/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
@@ -784,6 +786,7 @@ golang.org/x/mod v0.4.0/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
 golang.org/x/mod v0.4.1/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
 golang.org/x/mod v0.4.2 h1:Gz96sIWK3OalVv/I/qNygP42zyoKp3xptRVCWRFEBvo=
 golang.org/x/mod v0.4.2/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
+golang.org/x/mod v0.5.0/go.mod h1:5OXOZSfqPIIbmVBIIKWRFfZjPR0E5r58TLhUjH0a2Ro=
 golang.org/x/net v0.0.0-20180724234803-3673e40ba225/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20180826012351-8a410e7b638d/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20180906233101-161cd47e91fd/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
