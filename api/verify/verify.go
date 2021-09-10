@@ -22,7 +22,7 @@ import (
 
 	"github.com/f-secure-foundry/armory-drive-log/api"
 	"github.com/google/trillian/merkle/compact"
-	"github.com/google/trillian/merkle/rfc6962/hasher"
+	"github.com/google/trillian/merkle/rfc6962"
 	"golang.org/x/mod/sumdb/note"
 )
 
@@ -62,7 +62,7 @@ func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frS
 	// Next, ensure firmware manifest is discoverable:
 	//  - prove its inclusion under the new checkpoint, and
 	//  - prove that the new checkpoint is consistent with the device's old checkpoint
-	h := hasher.DefaultHasher
+	h := rfc6962.DefaultHasher
 	manifestHash := h.HashLeaf(pb.FirmwareRelease)
 	tree := (&compact.RangeFactory{Hash: h.HashChildren}).NewEmptyRange(0)
 

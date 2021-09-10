@@ -33,7 +33,7 @@ import (
 	"github.com/f-secure-foundry/armory-drive-log/api"
 	"github.com/golang/glog"
 	"github.com/google/trillian-examples/serverless/client"
-	"github.com/google/trillian/merkle/rfc6962/hasher"
+	"github.com/google/trillian/merkle/rfc6962"
 	"golang.org/x/mod/sumdb/note"
 )
 
@@ -42,6 +42,7 @@ var (
 	stateFile     = flag.String("state_file", "", "File path for where checkpoints should be stored")
 	logURL        = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
 	logPubKey     = flag.String("log_pubkey", "armory-drive-log-test+a5aae457+AbDoiIsZgSk5H0v0LjKPKv5dAMb0IfB47tocFtGmyW44", "The log's public key")
+	logOrigin     = flag.String("log_origin", api.OriginV0, "The expected first line of checkpoints issued by the log")
 	releasePubKey = flag.String("release_pubkey", "armory-drive-test+e0b83da5+ARFd7yMO7VQgK/N+KWETnS5O6dSqcTmTzQUXgQhJVVG0", "The release signer's public key")
 )
 
@@ -185,7 +186,7 @@ func stateTrackerFromFlags(ctx context.Context) (client.LogStateTracker, bool, e
 		return client.LogStateTracker{}, false, fmt.Errorf("unable to create new log signature verifier: %w", err)
 	}
 
-	lst, err := client.NewLogStateTracker(ctx, f, hasher.DefaultHasher, state, lSigV)
+	lst, err := client.NewLogStateTracker(ctx, f, rfc6962.DefaultHasher, state, lSigV, *logOrigin, client.UnilateralConsensus(f))
 	return lst, state == nil, err
 }
 
