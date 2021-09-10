@@ -41,6 +41,7 @@ var (
 	release       = flag.String("release", "armory-drive.release", "Path to release metadata file")
 	logURL        = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
 	logPubKeyFile = flag.String("log_pubkey_file", "", "Path to file containing the log's public key")
+	logOrigin     = flag.String("log_origin", api.OriginV0, "The expected first line of checkpoints issued by the log")
 	outputFile    = flag.String("output", "", "Path to write output file to, leave unset to write to stdout")
 	timeout       = flag.Duration("timeout", 10*time.Second, "Maximum duration to wait for release to become integrated into the log")
 )
@@ -69,7 +70,7 @@ func main() {
 		glog.Exitf("Failed to read release file %q: %v", *release, err)
 	}
 
-	bundle, err := createBundle(ctx, *logURL, releaseRaw, lSigV)
+	bundle, err := createBundle(ctx, *logURL, releaseRaw, lSigV, *logOrigin)
 	if err != nil {
 		glog.Exitf("Failed to create ProofBundle: %v", err)
 	}
@@ -88,7 +89,7 @@ func main() {
 	}
 }
 
-func createBundle(ctx context.Context, logURL string, release []byte, lSigV note.Verifier) (*api.ProofBundle, error) {
+func createBundle(ctx context.Context, logURL string, release []byte, lSigV note.Verifier, origin string) (*api.ProofBundle, error) {
 	root, err := url.Parse(logURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse log URL %q: %v", logURL, err)
@@ -100,7 +101,7 @@ func createBundle(ctx context.Context, logURL string, release []byte, lSigV note
 
 	h := rfc6962.DefaultHasher
 
-	st, err := client.NewLogStateTracker(ctx, f, h, nil, lSigV)
+	st, err := client.NewLogStateTracker(ctx, f, h, nil, lSigV, origin, client.UnilateralConsensus(f))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new LogStateTracker: %v", err)
 	}
