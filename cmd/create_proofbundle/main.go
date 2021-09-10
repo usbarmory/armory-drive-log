@@ -33,7 +33,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/google/trillian-examples/serverless/client"
 	"github.com/google/trillian/merkle/logverifier"
-	"github.com/google/trillian/merkle/rfc6962/hasher"
+	"github.com/google/trillian/merkle/rfc6962"
 	"golang.org/x/mod/sumdb/note"
 )
 
@@ -98,7 +98,7 @@ func createBundle(ctx context.Context, logURL string, release []byte, lSigV note
 		return nil, fmt.Errorf("failed to create fetcher: %v", err)
 	}
 
-	h := hasher.DefaultHasher
+	h := rfc6962.DefaultHasher
 
 	st, err := client.NewLogStateTracker(ctx, f, h, nil, lSigV)
 	if err != nil {

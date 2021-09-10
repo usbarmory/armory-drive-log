@@ -22,7 +22,7 @@ import (
 
 	"github.com/f-secure-foundry/armory-drive-log/api"
 	"github.com/google/trillian/merkle/compact"
-	"github.com/google/trillian/merkle/rfc6962/hasher"
+	"github.com/google/trillian/merkle/rfc6962"
 	"golang.org/x/mod/sumdb/note"
 )
 
@@ -48,7 +48,7 @@ var (
 // buildLog calculates a set of incremental root hashes for a growing log by adding leafHahses one at a time.
 func buildLog(t *testing.T, leafHashes [][]byte) [][]byte {
 	roots := make([][]byte, 0)
-	h := hasher.DefaultHasher
+	h := rfc6962.DefaultHasher
 	tree := (&compact.RangeFactory{Hash: h.HashChildren}).NewEmptyRange(0)
 	for _, lh := range leafHashes {
 		if err := tree.Append(lh, nil); err != nil {
@@ -70,7 +70,7 @@ func TestBundle(t *testing.T) {
 	logSigV := mustMakeVerifier(t, testLogSignerPublic)
 	fwSigV := mustMakeVerifier(t, testFirmwarePublic)
 
-	h := hasher.DefaultHasher
+	h := rfc6962.DefaultHasher
 	firmwareImageHash := []byte("Firmware Hash")
 	commitArtifacts := map[string][]byte{
 		"FirmwareImage": firmwareImageHash,

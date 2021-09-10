@@ -33,7 +33,7 @@ import (
 	"github.com/f-secure-foundry/armory-drive-log/api"
 	"github.com/golang/glog"
 	"github.com/google/trillian-examples/serverless/client"
-	"github.com/google/trillian/merkle/rfc6962/hasher"
+	"github.com/google/trillian/merkle/rfc6962"
 	"golang.org/x/mod/sumdb/note"
 )
 
@@ -185,7 +185,7 @@ func stateTrackerFromFlags(ctx context.Context) (client.LogStateTracker, bool, e
 		return client.LogStateTracker{}, false, fmt.Errorf("unable to create new log signature verifier: %w", err)
 	}
 
-	lst, err := client.NewLogStateTracker(ctx, f, hasher.DefaultHasher, state, lSigV)
+	lst, err := client.NewLogStateTracker(ctx, f, rfc6962.DefaultHasher, state, lSigV)
 	return lst, state == nil, err
 }
 
