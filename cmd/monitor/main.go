@@ -42,7 +42,7 @@ var (
 	stateFile     = flag.String("state_file", "", "File path for where checkpoints should be stored")
 	logURL        = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
 	logPubKey     = flag.String("log_pubkey", "armory-drive-log-test+a5aae457+AbDoiIsZgSk5H0v0LjKPKv5dAMb0IfB47tocFtGmyW44", "The log's public key")
-	logOrigin     = flag.String("log_origin", api.OriginV0, "The expected first line of checkpoints issued by the log")
+	logOrigin     = flag.String("log_origin", "", "The expected first line of checkpoints issued by the log")
 	releasePubKey = flag.String("release_pubkey", "armory-drive-test+e0b83da5+ARFd7yMO7VQgK/N+KWETnS5O6dSqcTmTzQUXgQhJVVG0", "The release signer's public key")
 )
 
