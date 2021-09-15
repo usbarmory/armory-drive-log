@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - master
+      - test
 
 jobs:
   sequence_and_integrate_job:
@@ -14,10 +14,10 @@ jobs:
       uses: google/trillian-examples/serverless/deploy/github/log/sequence_and_integrate@master
       with:
         log_dir: './log'
-        origin: 'ArmoryDrive Log v0'
+        origin: 'Armory Drive Test 1'
       env:
-        SERVERLESS_LOG_PRIVATE_KEY: ${{ secrets.SERVERLESS_LOG_PRIVATE_KEY }}
-        SERVERLESS_LOG_PUBLIC_KEY: ${{ secrets.SERVERLESS_LOG_PUBLIC_KEY }}
+        SERVERLESS_LOG_PRIVATE_KEY: ${{ secrets.SERVERLESS_LOG_TEST_PRIVATE_KEY }}
+        SERVERLESS_LOG_PUBLIC_KEY: ${{ secrets.SERVERLESS_LOG_TEST_PUBLIC_KEY }}
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_user_name: Serverless Bot

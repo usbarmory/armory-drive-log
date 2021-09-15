@@ -1,7 +1,7 @@
 on:
   push:
     tags: [v*]
-    branches: [ master ]
+    branches: [ test ]
   pull_request:
 
 jobs:
