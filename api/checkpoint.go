@@ -22,10 +22,6 @@ import (
 	"strconv"
 )
 
-// OriginV0 is the Checkpoint origin string for this log.
-// TODO: extract into flag
-const OriginV0 = "ArmoryDrive Log v0"
-
 // Checkpoint represents a minimal log checkpoint.
 type Checkpoint struct {
 	// Origin is the unique identifier for the log issuing this checkpoint.
@@ -52,10 +48,6 @@ func (c *Checkpoint) Unmarshal(data []byte) error {
 		return errors.New("invalid checkpoint - too few newlines")
 	}
 	origin := string(l[0])
-	// TODO: extract this check elsewhere or pass in expected origin.
-	if origin != OriginV0 {
-		return fmt.Errorf("invalid checkpoint - incorrect origin %q", origin)
-	}
 	size, err := strconv.ParseUint(string(l[1]), 10, 64)
 	if err != nil {
 		return fmt.Errorf("invalid checkpoint - size invalid: %w", err)

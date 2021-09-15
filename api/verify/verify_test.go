@@ -27,6 +27,7 @@ import (
 )
 
 const (
+	testLogOrigin = "ArmoryDrive Log v0"
 	testLogSignerPrivate = "PRIVATE+KEY+test-log+2b51c375+Ad+qPnxRnV5XOivW9d42+7xewjKwjXwYr3z9SeP+OOVK"
 	testLogSignerPublic  = "test-log+2b51c375+Ae73xsZZky/7/mv/jmPEAAVHi3KXBTz4F2DV6H/Htd4P"
 
@@ -271,7 +272,7 @@ func makeFirmwareRelease(t *testing.T, artifacts map[string][]byte, sig note.Sig
 
 func makeCheckpoint(t *testing.T, size int, hash []byte, sig note.Signer) []byte {
 	t.Helper()
-	cp := fmt.Sprintf("%s\n%d\n%s\n", api.OriginV0, int64(size), base64.StdEncoding.EncodeToString(hash))
+	cp := fmt.Sprintf("%s\n%d\n%s\n", testLogOrigin, int64(size), base64.StdEncoding.EncodeToString(hash))
 	n, err := note.Sign(&note.Note{Text: cp}, sig)
 	if err != nil {
 		t.Fatalf("Failed to sign checkpoint: %v", err)

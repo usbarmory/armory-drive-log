@@ -41,7 +41,7 @@ var (
 	release       = flag.String("release", "armory-drive.release", "Path to release metadata file")
 	logURL        = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
 	logPubKeyFile = flag.String("log_pubkey_file", "", "Path to file containing the log's public key")
-	logOrigin     = flag.String("log_origin", api.OriginV0, "The expected first line of checkpoints issued by the log")
+	logOrigin     = flag.String("log_origin", "", "The expected first line of checkpoints issued by the log")
 	outputFile    = flag.String("output", "", "Path to write output file to, leave unset to write to stdout")
 	timeout       = flag.Duration("timeout", 10*time.Second, "Maximum duration to wait for release to become integrated into the log")
 )

@@ -41,7 +41,7 @@ import (
 // If all of these checks hold, then we are sufficiently convinced that the firmware update is discoverable by others.
 //
 // TODO(al): Extend to support witnesses.
-func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frSigV note.Verifier, artifactHashes map[string][]byte) error {
+func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frSigV note.Verifier, artifactHashes map[string][]byte, origin string) error {
 	// First, check the signature on the new CP.
 	newCP := &api.Checkpoint{}
 	{
@@ -52,7 +52,9 @@ func Bundle(pb api.ProofBundle, oldCP api.Checkpoint, logSigV note.Verifier, frS
 		if err := newCP.Unmarshal([]byte(newCPRaw.Text)); err != nil {
 			return fmt.Errorf("failed to unmarshal NewCheckpoint: %v", err)
 		}
-		// TODO: verify newCP.Origin is as expected given logSigV.
+		if newCP.Origin != origin  {
+			return fmt.Errorf("invalid checkpoint - incorrect origin: %q", newCP.Origin)
+		}
 	}
 
 	if l := uint64(len(pb.LeafHashes)); l != newCP.Size {
