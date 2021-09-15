@@ -36,10 +36,6 @@ func TestUnmarshalCheckpoint(t *testing.T) {
 				Hash:   []byte("bananas"),
 			},
 		}, {
-			desc:    "wrong ecosystem",
-			m:       "Banana Checkpoint v1\n9944\ndGhlIHZpZXcgZnJvbSB0aGUgdHJlZSB0b3BzIGlzIGdyZWF0IQ==\n",
-			wantErr: true,
-		}, {
 			desc:    "valid with trailing data",
 			m:       "ArmoryDrive Log v0\n9944\ndGhlIHZpZXcgZnJvbSB0aGUgdHJlZSB0b3BzIGlzIGdyZWF0IQ==\nHere's some associated data.\n",
 			wantErr: true,

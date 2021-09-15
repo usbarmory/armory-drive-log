@@ -48,6 +48,9 @@ func (c *Checkpoint) Unmarshal(data []byte) error {
 		return errors.New("invalid checkpoint - too few newlines")
 	}
 	origin := string(l[0])
+	if len(origin) == 0 {
+		return fmt.Errorf("invalid checkpoint - empty origin")
+	}
 	size, err := strconv.ParseUint(string(l[1]), 10, 64)
 	if err != nil {
 		return fmt.Errorf("invalid checkpoint - size invalid: %w", err)
