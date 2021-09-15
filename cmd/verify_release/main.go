@@ -33,7 +33,7 @@ var (
 	manifest      = flag.String("manifest", "", "Path to the signed manifest")
 )
 
-const pubkeyEnv = "FR_PUBKEY"
+const pubkeyEnv = "FR_TEST_PUBKEY"
 
 func main() {
 	var pubkey string
