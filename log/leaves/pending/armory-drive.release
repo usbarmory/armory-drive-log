@@ -1,0 +1,18 @@
+{
+  "description": "armory-drive test-v2021.09.15",
+  "platform_id": "UA-MKII-ULZ",
+  "revision": "test-v2021.09.15",
+  "artifact_sha256": {
+    "armory-drive.csf": "AUvyumHrtxN1jWFLp+DzLBJoIaHPAXWu5IBHWSaz3fI=",
+    "armory-drive.imx": "5henVgJCblmzKVC9YMvh+oKWR6l2WbawRiKg0B75XLw=",
+    "armory-drive.sdp": "eLRKNr4WMd4jSJu0hrbByBSgClT5q7zznx4YRmiWkSw="
+  },
+  "source_url": "https://github.com/f-secure-foundry/armory-drive/tarball/test-v2021.09.15",
+  "source_sha256": "ijW2SAyfQ3w6uxanW6np7C71xHaUm0AEn0MlDh9i2hw=",
+  "tool_chain": "tamago version go1.17.1 linux/amd64",
+  "build_args": {
+    "REV": "36102ea"
+  }
+}
+
+— armory-drive-test 4Lg9pdzB+Et0DNJcQwSO+wvOYwxGMmhS0nsgifr6wTwiqCfjVfIWKEEXfi5GNCQuvFRDOue80iinP3CdQghB/3Ow8go=
