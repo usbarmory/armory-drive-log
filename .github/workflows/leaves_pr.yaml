@@ -32,4 +32,4 @@ jobs:
       env:
         # the actions triggered by a pull_request event do not have access to GH secrets,
         # therefore we embed the public key here. This should match keys/armory-drive-test.pub
-        FR_PUBKEY: armory-drive-test+e0b83da5+ARFd7yMO7VQgK/N+KWETnS5O6dSqcTmTzQUXgQhJVVG0
+        FR_PUBKEY: armory-drive+5a95a41b+Abfbe1W4+bZB//VfIXxds+SWldvUKRFxKHIy2fyg5nBO
