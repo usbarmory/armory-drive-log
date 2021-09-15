@@ -220,7 +220,7 @@ func TestBundle(t *testing.T) {
 		},
 	} {
 		t.Run(test.desc, func(t *testing.T) {
-			err := Bundle(test.pb, test.oldCP, logSigV, fwSigV, test.wantArtifacts)
+			err := Bundle(test.pb, test.oldCP, logSigV, fwSigV, test.wantArtifacts, testLogOrigin)
 			if gotErr := err != nil; gotErr != test.wantErr {
 				t.Fatalf("wantErr: %v, but got: %v", test.wantErr, err)
 			}
