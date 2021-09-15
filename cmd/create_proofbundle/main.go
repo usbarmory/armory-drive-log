@@ -70,6 +70,10 @@ func main() {
 		glog.Exitf("Failed to read release file %q: %v", *release, err)
 	}
 
+	if len(*logOrigin) == 0 {
+		glog.Exitf("Log origin cannot be empty.")
+	}
+
 	bundle, err := createBundle(ctx, *logURL, releaseRaw, lSigV, *logOrigin)
 	if err != nil {
 		glog.Exitf("Failed to create ProofBundle: %v", err)
