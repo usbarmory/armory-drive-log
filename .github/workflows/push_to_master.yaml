@@ -14,7 +14,7 @@ jobs:
       uses: google/trillian-examples/serverless/deploy/github/log/sequence_and_integrate@master
       with:
         log_dir: './log'
-        origin: 'Armory Drive Prod 1'
+        origin: 'Armory Drive Prod 2'
       env:
         SERVERLESS_LOG_PRIVATE_KEY: ${{ secrets.SERVERLESS_LOG_PRIVATE_KEY }}
         SERVERLESS_LOG_PUBLIC_KEY: ${{ secrets.SERVERLESS_LOG_PUBLIC_KEY }}
