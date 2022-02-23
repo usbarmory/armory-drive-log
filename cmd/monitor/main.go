@@ -41,9 +41,10 @@ var (
 	pollInterval  = flag.Duration("poll_interval", 1*time.Minute, "The interval at which the log will be polled for new data")
 	stateFile     = flag.String("state_file", "", "File path for where checkpoints should be stored")
 	logURL        = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
-	logPubKey     = flag.String("log_pubkey", "armory-drive-log-test+a5aae457+AbDoiIsZgSk5H0v0LjKPKv5dAMb0IfB47tocFtGmyW44", "The log's public key")
-	logOrigin     = flag.String("log_origin", "", "The expected first line of checkpoints issued by the log")
-	releasePubKey = flag.String("release_pubkey", "armory-drive-test+e0b83da5+ARFd7yMO7VQgK/N+KWETnS5O6dSqcTmTzQUXgQhJVVG0", "The release signer's public key")
+	logPubKey     = flag.String("log_pubkey", "armory-drive-log+16541b8f+AYDPmG5pQp4Bgu0a1mr5uDZ196+t8lIVIfWQSPWmP+Jv", "The log's public key")
+	logOrigin     = flag.String("log_origin", "Armory Drive Prod 2", "The expected first line of checkpoints issued by the log")
+	releasePubKey = flag.String("release_pubkey", "armory-drive+5a95a41b+Abfbe1W4+bZB//VfIXxds+SWldvUKRFxKHIy2fyg5nBO", "The release signer's public key")
+	cleanup       = flag.Bool("cleanup", true, "Set to false to keep git checkouts and make artifacts around after verification")
 )
 
 func main() {
@@ -62,14 +63,16 @@ func main() {
 		releaseVerifiers = note.VerifierList(v)
 	}
 
+	rbv, err := NewReproducibleBuildVerifier(*cleanup)
+	if err != nil {
+		glog.Exitf("Failed to create reproducible build verifier: %v", err)
+	}
+
 	monitor := Monitor{
 		st:               st,
 		stateFile:        *stateFile,
 		releaseVerifiers: releaseVerifiers,
-		handler: func(i uint64, r api.FirmwareRelease) error {
-			glog.Infof("%d: Release version %q available at %s", i, r.Revision, r.SourceURL)
-			return nil
-		},
+		handler:          rbv.VerifyManifest,
 	}
 
 	if isNew {
@@ -111,7 +114,7 @@ type Monitor struct {
 	st               client.LogStateTracker
 	stateFile        string
 	releaseVerifiers note.Verifiers
-	handler          func(uint64, api.FirmwareRelease) error
+	handler          func(context.Context, uint64, api.FirmwareRelease) error
 }
 
 // From checks the leaves from `start` up to the checkpoint from the state tracker.
@@ -149,7 +152,7 @@ func (m *Monitor) From(ctx context.Context, start uint64) error {
 		if err := json.Unmarshal([]byte(releaseNote.Text), &release); err != nil {
 			return fmt.Errorf("failed to unmarshal release at index %d: %w", i, err)
 		}
-		if err := m.handler(i, release); err != nil {
+		if err := m.handler(ctx, i, release); err != nil {
 			return fmt.Errorf("handler(): %w", err)
 		}
 	}
