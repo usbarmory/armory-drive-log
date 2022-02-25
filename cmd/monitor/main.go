@@ -15,7 +15,10 @@
 // monitor starts a long-running process that will continually follow a log
 // for new checkpoints. All checkpoints are checked for consistency, and all
 // leaves in the tree will be downloaded, verified, and the release info
-// printed to the program's log (via `glog.Info`).
+// will be reproducibly verified.
+// This tool has a number of expectations of the environment, such as a working
+// tamago installation, git, and other make tooling. See the README and Dockerfile
+// in this directory for more details.
 package main
 
 import (

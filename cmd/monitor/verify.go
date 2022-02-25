@@ -1,4 +1,4 @@
-// Copyright 2021 The Project Authors. All Rights Reserved.
+// Copyright 2022 The Project Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,16 +34,23 @@ const (
 	gitRepo  = "armory-drive"
 )
 
+// NewReproducibleBuildVerifier returns a ReproducibleBuildVerifier that will delete
+// any temporary git repositories after use if cleanup is true, or leave them around
+// for further investigation if false.
 func NewReproducibleBuildVerifier(cleanup bool) (*ReproducibleBuildVerifier, error) {
 	return &ReproducibleBuildVerifier{
 		cleanup: cleanup,
 	}, nil
 }
 
+// ReproducibleBuildVerifier checks out the source code referenced by a manifest and
+// determines whether it can reproduce the final build artifacts.
 type ReproducibleBuildVerifier struct {
 	cleanup bool
 }
 
+// VerifyManifest attempts to reproduce the FirmwareRelease at index `i` in the log by
+// checking out the code and running the make file.
 func (v *ReproducibleBuildVerifier) VerifyManifest(ctx context.Context, i uint64, r api.FirmwareRelease) error {
 	glog.V(1).Infof("VerifyManifest %d: %q", i, r.Revision)
 	// Create temporary directory that will be cleaned up after this method returns
@@ -120,10 +127,10 @@ func (v *ReproducibleBuildVerifier) VerifyManifest(ctx context.Context, i uint64
 	}
 	if got, want := sha256.Sum256(data), r.ArtifactSHA256[api.FirmwareArtifactName]; !bytes.Equal(got[:], want) {
 		// TODO: report this in a more visible way than an error in the log.
-		glog.Errorf("Failed to verify %s build (got %x, wanted %x)", api.FirmwareArtifactName, got, want)
-	} else {
-		glog.Infof("Leaf %d for revision %q verified at git tag %q", i, r.Revision, r.BuildArgs["REV"])
+		glog.Errorf("Failed to verify leaf %d with revision %q: %s (got %x, wanted %x)", i, r.Revision, api.FirmwareArtifactName, got, want)
+		return nil
 	}
 
+	glog.Infof("Leaf %d for revision %q verified at git tag %q", i, r.Revision, r.BuildArgs["REV"])
 	return nil
 }
