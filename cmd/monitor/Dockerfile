@@ -38,6 +38,7 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27
 
 # Tamago bits
 RUN apt-get -y install binutils-arm-none-eabi
+# This installs a newer version of the cross-compilation tools, but they seem to behave the same.
 # RUN curl -sfL https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2 | tar -xjf - -C /tmp/ && \
 #     cp -R /tmp/gcc-arm-none-eabi-10.3-2021.10/* /usr/
 

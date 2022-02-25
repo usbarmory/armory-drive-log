@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"github.com/f-secure-foundry/armory-drive-log/api"
+	"github.com/f-secure-foundry/armory-drive-log/keys"
 	"github.com/golang/glog"
 	"github.com/google/trillian-examples/serverless/client"
 	"github.com/google/trillian/merkle/rfc6962"
@@ -41,9 +42,9 @@ var (
 	pollInterval  = flag.Duration("poll_interval", 1*time.Minute, "The interval at which the log will be polled for new data")
 	stateFile     = flag.String("state_file", "", "File path for where checkpoints should be stored")
 	logURL        = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
-	logPubKey     = flag.String("log_pubkey", "armory-drive-log+16541b8f+AYDPmG5pQp4Bgu0a1mr5uDZ196+t8lIVIfWQSPWmP+Jv", "The log's public key")
+	logPubKey     = flag.String("log_pubkey", keys.ArmoryDriveLogPub, "The log's public key")
 	logOrigin     = flag.String("log_origin", "Armory Drive Prod 2", "The expected first line of checkpoints issued by the log")
-	releasePubKey = flag.String("release_pubkey", "armory-drive+5a95a41b+Abfbe1W4+bZB//VfIXxds+SWldvUKRFxKHIy2fyg5nBO", "The release signer's public key")
+	releasePubKey = flag.String("release_pubkey", keys.ArmoryDrivePub, "The release signer's public key")
 	cleanup       = flag.Bool("cleanup", true, "Set to false to keep git checkouts and make artifacts around after verification")
 )
 
