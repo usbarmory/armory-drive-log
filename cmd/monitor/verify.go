@@ -77,6 +77,8 @@ func (v *ReproducibleBuildVerifier) VerifyManifest(ctx context.Context, i uint64
 		return fmt.Errorf("expected revision %q but got %q for tag %q", want, got, r.Revision)
 	}
 
+	// TODO: support downloading other TAMAGO compiler builds.
+	// For now, this just uses the one version pointed to by the process env.
 	tamagoBin := ""
 	for _, e := range os.Environ() {
 		if strings.HasPrefix(e, "TAMAGO=") {
@@ -111,14 +113,14 @@ func (v *ReproducibleBuildVerifier) VerifyManifest(ctx context.Context, i uint64
 		return fmt.Errorf("failed to make: %v (%s)", err, out)
 	}
 
-	// Hash the imx
-	data, err := ioutil.ReadFile(filepath.Join(repoRoot, "armory-drive.imx"))
+	// Hash the firmware artifact.
+	data, err := ioutil.ReadFile(filepath.Join(repoRoot, api.FirmwareArtifactName))
 	if err != nil {
-		return fmt.Errorf("failed to read armory-drive.imx: %v", err)
+		return fmt.Errorf("failed to read %s: %v", api.FirmwareArtifactName, err)
 	}
-	if got, want := sha256.Sum256(data), r.ArtifactSHA256["armory-drive.imx"]; !bytes.Equal(got[:], want) {
-		// TODO: this should return an error
-		glog.Errorf("Failed to verify armory-drive.imx build (got %x, wanted %x)", got, want)
+	if got, want := sha256.Sum256(data), r.ArtifactSHA256[api.FirmwareArtifactName]; !bytes.Equal(got[:], want) {
+		// TODO: report this in a more visible way than an error in the log.
+		glog.Errorf("Failed to verify %s build (got %x, wanted %x)", api.FirmwareArtifactName, got, want)
 	} else {
 		glog.Infof("Leaf %d for revision %q verified at git tag %q", i, r.Revision, r.BuildArgs["REV"])
 	}
