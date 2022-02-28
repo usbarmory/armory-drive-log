@@ -158,7 +158,7 @@ func (m *Monitor) From(ctx context.Context, start uint64) error {
 
 // stateTrackerFromFlags constructs a state tracker based on the flags provided to the main invocation.
 // The checkpoint returned will be the checkpoint representing this monitor's view of the log history.
-// A boolean is returned that is true iff the checkpoint was fetched from the log to initialize state.
+// A boolean is returned that is true if the checkpoint was fetched from the log to initialize state.
 func stateTrackerFromFlags(ctx context.Context) (client.LogStateTracker, bool, error) {
 	if len(*stateFile) == 0 {
 		return client.LogStateTracker{}, false, errors.New("--state_file required")
