@@ -31,7 +31,7 @@ RUN apt-get -y install curl unzip wget xxd git
 
 # Tamago bits
 RUN apt-get -y install binutils-arm-none-eabi build-essential make u-boot-tools musl-tools
-RUN curl -sfL https://github.com/f-secure-foundry/tamago-go/releases/download/tamago-go1.17.1/tamago-go1.17.1.linux-amd64.tar.gz | tar -xzf - -C /
+RUN curl -sfL https://github.com/usbarmory/tamago-go/releases/download/tamago-go1.17.1/tamago-go1.17.1.linux-amd64.tar.gz | tar -xzf - -C /
 ENV TAMAGO=/usr/local/tamago-go/bin/go
 
 ENV GOPATH /go

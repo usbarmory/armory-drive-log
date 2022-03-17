@@ -4,7 +4,7 @@ This continuously monitors the log to look for claims about builds being publish
 The log properties are checked to ensure the log is consistent with any previous
 view, and that all claims are verifiably committed to by the log.
 
-For each [`FirmwareRelease`](https://github.com/f-secure-foundry/armory-drive-log/blob/master/api/log_entries.go#L26)
+For each [`FirmwareRelease`](https://github.com/usbarmory/armory-drive-log/blob/master/api/log_entries.go#L26)
 manifest claim that it hasn't seen before, the following steps are taken:
  1. The source repository is cloned at the release tag
  2. The git revision at the tag is checked against the manifest
@@ -25,7 +25,7 @@ docker run armory-drive-monitor -v=1
 
 Note that it is expected that the first entry in the log is not reproducibly
 built. This is because of https://github.com/golang/go/issues/48557 which
-was fixed in https://github.com/f-secure-foundry/armory-drive/commit/f3a32e3ab3aac6866a3bd8b70a6575d87335ef5d.
+was fixed in https://github.com/usbarmory/armory-drive/commit/f3a32e3ab3aac6866a3bd8b70a6575d87335ef5d.
 
 ## TODO
 

@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/f-secure-foundry/armory-drive-log/api"
+	"github.com/usbarmory/armory-drive-log/api"
 	"github.com/google/trillian/merkle/compact"
 	"github.com/google/trillian/merkle/rfc6962"
 	"golang.org/x/mod/sumdb/note"

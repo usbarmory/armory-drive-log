@@ -27,13 +27,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/f-secure-foundry/armory-drive-log/api"
+	"github.com/usbarmory/armory-drive-log/api"
 	"github.com/golang/glog"
 	"golang.org/x/mod/sumdb/note"
 )
 
 var (
-	repo           = flag.String("repo", "f-secure-foundry/armory-drive", "GitHub repo where release will be uploaded")
+	repo           = flag.String("repo", "usbarmory/armory-drive", "GitHub repo where release will be uploaded")
 	description    = flag.String("description", "", "Release description")
 	platformID     = flag.String("platform_id", "", "Specifies the plaform ID that this release is targetting")
 	commitHash     = flag.String("commit_hash", "", "Speficies the github commit hash that the release was built from")

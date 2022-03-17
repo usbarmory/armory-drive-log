@@ -23,7 +23,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/f-secure-foundry/armory-drive-log/api"
+	"github.com/usbarmory/armory-drive-log/api"
 	"github.com/golang/glog"
 	"golang.org/x/mod/sumdb/note"
 )
