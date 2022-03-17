@@ -1,4 +1,4 @@
-module github.com/f-secure-foundry/armory-drive-log
+module github.com/usbarmory/armory-drive-log
 
 go 1.16
 

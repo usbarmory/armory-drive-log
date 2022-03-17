@@ -12,7 +12,7 @@ specified by the `--private_key` flag, this key should be in the note.Signer key
 format.
 
 > :frog: You can use the
-[generate_keys](https://github.com/f-secure-foundry/armory-drive-log/tree/master/cmd/generate_keys)
+[generate_keys](https://github.com/usbarmory/armory-drive-log/tree/master/cmd/generate_keys)
 > command to create a suitable key pair.
 
 e.g.:
@@ -32,7 +32,7 @@ I0625 11:41:25.813439 3275756 main.go:75] Hashing release artifacts...
     "armory-drive.sig": "I4aFxDaRAYl4CUpgPFJGDTVa11lQ03xsAxILpWOSeiU=",
     "armory-drive.srk": "NvUBxl9CZYe2al+G072gO+sFzZrWwx0F1iH0FUoDakM="
   },
-  "source_url": "https://github.com/f-secure-foundry/armory-drive/tarball/v2021.06.25",
+  "source_url": "https://github.com/usbarmory/armory-drive/tarball/v2021.06.25",
   "source_sha256": "NtFkuGqfXBfSQo9GpcdveVTfxIN6i6CjNvRnVPW7f9M=",
   "tool_chain": "tamago1.16.3",
   "build_args": {

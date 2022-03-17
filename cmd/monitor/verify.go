@@ -24,13 +24,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/f-secure-foundry/armory-drive-log/api"
-	"github.com/f-secure-foundry/armory-drive-log/keys"
+	"github.com/usbarmory/armory-drive-log/api"
+	"github.com/usbarmory/armory-drive-log/keys"
 	"github.com/golang/glog"
 )
 
 const (
-	gitOwner = "f-secure-foundry"
+	gitOwner = "usbarmory"
 	gitRepo  = "armory-drive"
 )
 

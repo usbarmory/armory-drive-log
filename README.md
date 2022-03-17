@@ -1,7 +1,7 @@
-This repository allows authenticated updates of the [Armory Drive](https://github.com/f-secure-foundry/armory-drive)
+This repository allows authenticated updates of the [Armory Drive](https://github.com/usbarmory/armory-drive)
 firmware through tamper-evident logs powered by Google [transparency](https://transparency.dev/) framework.
 
-See the [wiki](https://github.com/f-secure-foundry/armory-drive/wiki/Firmware-Transparency) for more information.
+See the [wiki](https://github.com/usbarmory/armory-drive/wiki/Firmware-Transparency) for more information.
 
 License
 =======

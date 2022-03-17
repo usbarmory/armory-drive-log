@@ -29,7 +29,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/f-secure-foundry/armory-drive-log/api"
+	"github.com/usbarmory/armory-drive-log/api"
 	"github.com/golang/glog"
 	"github.com/google/trillian-examples/serverless/client"
 	"github.com/google/trillian/merkle/logverifier"
@@ -39,7 +39,7 @@ import (
 
 var (
 	release       = flag.String("release", "armory-drive.release", "Path to release metadata file")
-	logURL        = flag.String("log_url", "https://raw.githubusercontent.com/f-secure-foundry/armory-drive-log/master/log/", "URL identifying the location of the log")
+	logURL        = flag.String("log_url", "https://raw.githubusercontent.com/usbarmory/armory-drive-log/master/log/", "URL identifying the location of the log")
 	logPubKeyFile = flag.String("log_pubkey_file", "", "Path to file containing the log's public key")
 	logOrigin     = flag.String("log_origin", "", "The expected first line of checkpoints issued by the log")
 	outputFile    = flag.String("output", "", "Path to write output file to, leave unset to write to stdout")
