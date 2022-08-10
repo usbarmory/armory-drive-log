@@ -31,8 +31,8 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/google/trillian-examples/serverless/client"
-	"github.com/google/trillian/merkle/logverifier"
-	"github.com/google/trillian/merkle/rfc6962"
+	"github.com/transparency-dev/merkle/proof"
+	"github.com/transparency-dev/merkle/rfc6962"
 	"github.com/usbarmory/armory-drive-log/api"
 	"golang.org/x/mod/sumdb/note"
 )
@@ -111,7 +111,6 @@ func createBundle(ctx context.Context, logURL string, release []byte, lSigV note
 	}
 
 	leafHash := h.HashLeaf(release)
-	lv := logverifier.New(h)
 	// Wait for inclusion
 	ticker := time.NewTicker(time.Millisecond)
 	defer ticker.Stop()
@@ -146,7 +145,7 @@ func createBundle(ctx context.Context, logURL string, release []byte, lSigV note
 		if err != nil {
 			return nil, fmt.Errorf("failed to create inclusion proof for leaf %d: %v", idx, err)
 		}
-		if err := lv.VerifyInclusionProof(int64(idx), int64(cp.Size), ip, cp.Hash, leafHash); err != nil {
+		if err := proof.VerifyInclusion(h, idx, cp.Size, leafHash, ip, cp.Hash); err != nil {
 			return nil, fmt.Errorf("failed to verify inclusion proof: %q", err)
 		}
 		glog.Infof("Found leaf at %d", idx)
