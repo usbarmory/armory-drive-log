@@ -27,17 +27,17 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
 
-	"github.com/usbarmory/armory-drive-log/api"
-	"github.com/usbarmory/armory-drive-log/keys"
 	"github.com/golang/glog"
 	"github.com/google/trillian-examples/serverless/client"
 	"github.com/google/trillian/merkle/rfc6962"
+	"github.com/usbarmory/armory-drive-log/api"
+	"github.com/usbarmory/armory-drive-log/keys"
 	"golang.org/x/mod/sumdb/note"
 )
 
@@ -160,7 +160,7 @@ func (m *Monitor) From(ctx context.Context, start uint64) error {
 			return fmt.Errorf("handler(): %w", err)
 		}
 	}
-	return ioutil.WriteFile(m.stateFile, m.st.LatestConsistentRaw, 0644)
+	return os.WriteFile(m.stateFile, m.st.LatestConsistentRaw, 0644)
 }
 
 // stateTrackerFromFlags constructs a state tracker based on the flags provided to the main invocation.
@@ -171,7 +171,7 @@ func stateTrackerFromFlags(ctx context.Context) (client.LogStateTracker, bool, e
 		return client.LogStateTracker{}, false, errors.New("--state_file required")
 	}
 
-	state, err := ioutil.ReadFile(*stateFile)
+	state, err := os.ReadFile(*stateFile)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			return client.LogStateTracker{}, false, fmt.Errorf("could not read state file %q: %w", *stateFile, err)
@@ -213,6 +213,6 @@ func newFetcher(root *url.URL) (client.Fetcher, error) {
 			return nil, err
 		}
 		defer resp.Body.Close()
-		return ioutil.ReadAll(resp.Body)
+		return io.ReadAll(resp.Body)
 	}, nil
 }

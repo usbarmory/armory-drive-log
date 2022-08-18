@@ -22,18 +22,18 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/usbarmory/armory-drive-log/api"
 	"github.com/golang/glog"
 	"github.com/google/trillian-examples/serverless/client"
 	"github.com/google/trillian/merkle/logverifier"
 	"github.com/google/trillian/merkle/rfc6962"
+	"github.com/usbarmory/armory-drive-log/api"
 	"golang.org/x/mod/sumdb/note"
 )
 
@@ -207,7 +207,7 @@ var getByScheme = map[string]func(context.Context, *url.URL) ([]byte, error){
 	"http":  readHTTP,
 	"https": readHTTP,
 	"file": func(_ context.Context, u *url.URL) ([]byte, error) {
-		return ioutil.ReadFile(u.Path)
+		return os.ReadFile(u.Path)
 	},
 }
 
@@ -224,7 +224,7 @@ func readHTTP(ctx context.Context, u *url.URL) ([]byte, error) {
 
 	switch resp.StatusCode {
 	case 200:
-		return ioutil.ReadAll(resp.Body)
+		return io.ReadAll(resp.Body)
 	case 404:
 		return nil, os.ErrNotExist
 	default:

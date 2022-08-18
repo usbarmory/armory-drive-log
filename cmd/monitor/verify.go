@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,15 +18,14 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/usbarmory/armory-drive-log/api"
 	"github.com/usbarmory/armory-drive-log/keys"
-	"github.com/golang/glog"
 )
 
 const (
@@ -121,7 +120,7 @@ func (v *ReproducibleBuildVerifier) VerifyManifest(ctx context.Context, i uint64
 	}
 
 	// Hash the firmware artifact.
-	data, err := ioutil.ReadFile(filepath.Join(repoRoot, api.FirmwareArtifactName))
+	data, err := os.ReadFile(filepath.Join(repoRoot, api.FirmwareArtifactName))
 	if err != nil {
 		return fmt.Errorf("failed to read %s: %v", api.FirmwareArtifactName, err)
 	}
