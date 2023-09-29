@@ -30,9 +30,9 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/transparency-dev/serverless-log/client"
 	"github.com/transparency-dev/merkle/proof"
 	"github.com/transparency-dev/merkle/rfc6962"
+	"github.com/transparency-dev/serverless-log/client"
 	"github.com/usbarmory/armory-drive-log/api"
 	"golang.org/x/mod/sumdb/note"
 )
@@ -122,7 +122,7 @@ func createBundle(ctx context.Context, logURL string, release []byte, lSigV note
 			return nil, ctx.Err()
 		}
 
-		if err := st.Update(ctx); err != nil {
+		if _, _, _, err := st.Update(ctx); err != nil {
 			return nil, fmt.Errorf("failed to update LogState: %v", err)
 		}
 		cp := st.LatestConsistent
