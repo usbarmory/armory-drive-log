@@ -27,8 +27,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/usbarmory/armory-drive-log/api"
 	"github.com/golang/glog"
+	"github.com/usbarmory/armory-drive-log/api"
 	"golang.org/x/mod/sumdb/note"
 )
 
@@ -50,7 +50,7 @@ func main() {
 		glog.Exitf("Invalid flag(s):\n%s", err)
 	}
 
-	sourceURL := fmt.Sprintf("https://github.com/%s/tarball/%s", *repo, *revisionTag)
+	sourceURL := fmt.Sprintf("https://github.com/%s/archive/refs/tags/%s.tar.gz", *repo, *revisionTag)
 	sourceHash, err := hashRemote(sourceURL)
 	if err != nil {
 		glog.Exitf("Failed to hash source tarball (%s): %v", sourceURL, err)
