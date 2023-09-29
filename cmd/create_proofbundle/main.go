@@ -30,7 +30,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/google/trillian-examples/serverless/client"
+	"github.com/transparency-dev/serverless-log/client"
 	"github.com/transparency-dev/merkle/proof"
 	"github.com/transparency-dev/merkle/rfc6962"
 	"github.com/usbarmory/armory-drive-log/api"

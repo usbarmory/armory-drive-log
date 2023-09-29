@@ -34,8 +34,8 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/google/trillian-examples/serverless/client"
 	"github.com/transparency-dev/merkle/rfc6962"
+	"github.com/transparency-dev/serverless-log/client"
 	"github.com/usbarmory/armory-drive-log/api"
 	"github.com/usbarmory/armory-drive-log/keys"
 	"golang.org/x/mod/sumdb/note"
