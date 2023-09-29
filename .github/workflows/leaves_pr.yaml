@@ -12,7 +12,7 @@ jobs:
 
     - name: Leaf validator step
       id: leaf_validator
-      uses: google/trillian-examples/serverless/deploy/github/log/leaf_validator@master
+      uses: transparency-dev/serverless-log/deploy/github/log/leaf_validator@main
       with:
         log_dir: './log'
 
