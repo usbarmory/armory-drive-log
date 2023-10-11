@@ -34,8 +34,9 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/google/trillian-examples/serverless/client"
+	"github.com/transparency-dev/merkle/proof"
 	"github.com/transparency-dev/merkle/rfc6962"
+	"github.com/transparency-dev/serverless-log/client"
 	"github.com/usbarmory/armory-drive-log/api"
 	"github.com/usbarmory/armory-drive-log/keys"
 	"golang.org/x/mod/sumdb/note"
@@ -91,7 +92,7 @@ func main() {
 	defer ticker.Stop()
 	for {
 		lastHead := st.LatestConsistent.Size
-		if err := st.Update(ctx); err != nil {
+		if _, _, _, err := st.Update(ctx); err != nil {
 			glog.Exitf("Failed to update checkpoint: %q", err)
 		}
 		if st.LatestConsistent.Size > lastHead {
@@ -140,7 +141,7 @@ func (m *Monitor) From(ctx context.Context, start uint64) error {
 			return fmt.Errorf("failed to get inclusion proof for index %d: %v", i, err)
 		}
 
-		if err := m.st.Verifier.VerifyInclusionProof(int64(i), int64(fromCP.Size), ip, fromCP.Hash, hash); err != nil {
+		if err := proof.VerifyInclusion(m.st.Hasher, i, fromCP.Size, hash, ip, fromCP.Hash); err != nil {
 			return fmt.Errorf("VerifyInclusionProof() %d: %v", i, err)
 		}
 
