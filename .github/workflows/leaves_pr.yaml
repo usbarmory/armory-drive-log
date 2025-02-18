@@ -19,8 +19,8 @@ jobs:
     - name: Install golang
       run: |
         cd /tmp
-        wget https://golang.org/dl/go1.17.1.linux-amd64.tar.gz
-        tar xvf go1.17.1.linux-amd64.tar.gz
+        wget https://golang.org/dl/go1.23.0.linux-amd64.tar.gz
+        tar xvf go1.23.0.linux-amd64.tar.gz
 
     - name: Compile verify_release tool
       run: |
